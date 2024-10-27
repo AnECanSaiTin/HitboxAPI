@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "cn.anecansaitin.hitboxapi.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "hitboxapi.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
