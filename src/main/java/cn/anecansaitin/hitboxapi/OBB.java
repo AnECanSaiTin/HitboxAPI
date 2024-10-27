@@ -7,8 +7,6 @@ import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.List;
-
 /**
  * OBB碰撞箱<br>
  * 一种可以旋转的碰撞箱<br>
