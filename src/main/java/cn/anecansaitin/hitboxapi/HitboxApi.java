@@ -12,5 +12,6 @@ public class HitboxApi {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public HitboxApi(IEventBus modEventBus, ModContainer modContainer) {
+        System.out.println("hello");
     }
 }
