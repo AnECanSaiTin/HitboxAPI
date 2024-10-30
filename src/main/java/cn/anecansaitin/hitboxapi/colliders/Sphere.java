@@ -13,10 +13,6 @@ public final class Sphere implements ICollision {
         this.radius = radius;
     }
 
-    public boolean isCollision(Sphere other) {
-        return center.distanceSquared(other.center) <= (radius + other.radius) * (radius + other.radius);
-    }
-
     public Vector3f getCenter() {
         return center;
     }

@@ -19,6 +19,7 @@ base {
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 neoForge {
+    interfaceInjectionData.from "interfaces.json"
     // Specify the version of NeoForge to use.
     version = project.neo_version
 

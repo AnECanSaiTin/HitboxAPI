@@ -1,4 +1,4 @@
-package cn.anecansaitin.hitboxapi.mixin;
+package cn.anecansaitin.hitboxapi.mixin.client;
 
 import cn.anecansaitin.hitboxapi.common.CollisionHolder;
 import cn.anecansaitin.hitboxapi.common.HitboxDataAttachments;

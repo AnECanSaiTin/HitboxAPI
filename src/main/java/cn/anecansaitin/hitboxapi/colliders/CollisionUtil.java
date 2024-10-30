@@ -1,5 +1,6 @@
 package cn.anecansaitin.hitboxapi.colliders;
 
+import net.minecraft.world.phys.AABB;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -168,6 +169,14 @@ public final class CollisionUtil {
                         Math.abs((box2.getRotationV()[2].mul(box2.getHalfExtents().z, v)).dot(Plane))));
     }
 
+    private static Vector3f getClosestPointAABB(Vector3f point, AABB aabb) {
+        Vector3f nearP = new Vector3f();
+        nearP.x = (float) Math.clamp(point.x, aabb.minX, aabb.maxX);
+        nearP.y = (float) Math.clamp(point.y, aabb.minY, aabb.maxY);
+        nearP.z = (float) Math.clamp(point.z, aabb.minZ, aabb.maxZ);
+        return nearP;
+    }
+
     /**
      * 判断两个胶囊体是否碰撞
      *
@@ -283,11 +292,52 @@ public final class CollisionUtil {
 
     /**
      * 判断球体与球体是否碰撞
+     *
      * @param sphere 球体
-     * @param other 球体
+     * @param other  球体
      * @return 有碰撞返回true
      */
     public static boolean isCollision(Sphere sphere, Sphere other) {
         return sphere.getCenter().distanceSquared(other.getCenter()) <= Math.pow(sphere.getRadius() + other.getRadius(), 2);
+    }
+
+    /**
+     * 判断球体与AABB盒是否碰撞
+     *
+     * @param sphere 球体
+     * @param aabb   AABB盒
+     * @return 有碰撞返回true
+     */
+    public static boolean isCollision(Sphere sphere, AABB aabb) {
+        //求出最近点
+        Vector3f center = sphere.getCenter();
+        Vector3f nearP = getClosestPointAABB(center, aabb);
+        //求出最近点与球心的距离
+        float distance = nearP.sub(center).lengthSquared();
+        float radius = (float) Math.pow(sphere.getRadius(), 2);
+        //距离小于半径则碰撞
+        return distance <= radius;
+    }
+
+    /**
+     * 判断胶囊体与AABB盒是否碰撞
+     * @param capsule 胶囊体
+     * @param aabb AABB盒
+     * @return 有碰撞返回true
+     */
+    public static boolean isCollision(Capsule capsule, AABB aabb) {
+        //计算头尾点最值
+        Vector3f pointA1 = capsule.getDirection().mul(capsule.getDirection().y, new Vector3f()).add(capsule.getCenter());
+        Vector3f pointA2 = capsule.getDirection().mul(-capsule.getDirection().y, new Vector3f()).add(capsule.getCenter());
+
+        Vector3f closest1 = getClosestPointOnSegment(pointA1, pointA2, aabb.getCenter().toVector3f());
+        Vector3f closest2 = getClosestPointAABB(closest1, aabb);
+
+        //求胶囊体半径平方
+        float totalRadius = (float) Math.pow(capsule.getRadius(), 2);
+        //求两个点之间的距离
+        float distance = closest1.sub(closest2).lengthSquared();
+        //距离小于等于半径平方则碰撞
+        return distance <= totalRadius;
     }
 }

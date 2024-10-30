@@ -23,18 +23,6 @@ public final class Capsule implements ICollision {
     }
 
     @Override
-    public boolean isColliding(ICollision other) {
-        preIsColliding();
-        other.preIsColliding();
-
-        return switch (other.getType()) {
-            case CAPSULE -> CollisionUtil.isCollision(this, (Capsule) other);
-            case SPHERE -> CollisionUtil.isCollision(this, (Sphere) other);
-            case OBB -> CollisionUtil.isCollision(this, (OBB) other);
-        };
-    }
-
-    @Override
     public void preIsColliding() {
         if (shouldUpdateDirection) {
             updateDirection();

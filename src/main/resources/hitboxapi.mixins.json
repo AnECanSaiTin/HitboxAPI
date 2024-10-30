@@ -5,9 +5,10 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "hitboxapi.refmap.json",
   "mixins": [
+    "common.AABBMixin"
   ],
   "client": [
-    "EntityRenderDispatcherMixin"
+    "client.EntityRenderDispatcherMixin"
   ],
   "injectors": {
     "defaultRequire": 1

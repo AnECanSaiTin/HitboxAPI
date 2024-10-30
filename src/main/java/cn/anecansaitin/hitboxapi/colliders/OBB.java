@@ -1,6 +1,7 @@
 package cn.anecansaitin.hitboxapi.colliders;
 
 import cn.anecansaitin.hitboxapi.client.IColliderRender;
+import net.minecraft.world.phys.AABB;
 import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -16,6 +17,8 @@ public final class OBB implements ICollision {
     private final Vector3f[] rotationV;
     private final Vector3f halfExtents;
     private boolean shouldUpdateRotationV;
+    private static final Vector3f[] aabbV = {new Vector3f(1, 0, 0), new Vector3f(0, 1, 0), new Vector3f(0, 0, 1)};
+    private static final Quaternionf aabbQ = new Quaternionf();
 
     public OBB(Vector3f center, Vector3f halfExtents, Quaternionf rotation) {
         this.center = center;
@@ -23,6 +26,13 @@ public final class OBB implements ICollision {
         this.rotationV = new Vector3f[3];
         this.rotationQ = rotation;
         updateRotationV();
+    }
+
+    public OBB(AABB aabb) {
+        center = aabb.getCenter().toVector3f();
+        halfExtents = new Vector3f((float) (aabb.getXsize() / 2), (float) (aabb.getYsize() / 2), (float) (aabb.getZsize() / 2));
+        rotationV = aabbV;
+        rotationQ = aabbQ;
     }
 
     /**
