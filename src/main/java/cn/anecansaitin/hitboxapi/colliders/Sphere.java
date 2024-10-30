@@ -1,8 +1,10 @@
-package cn.anecansaitin.hitboxapi;
+package cn.anecansaitin.hitboxapi.colliders;
 
+import cn.anecansaitin.hitboxapi.client.IColliderRender;
 import org.joml.Vector3f;
 
-public final class Sphere {
+public final class Sphere implements ICollision {
+    public static final Sphere EMPTY = new Sphere(new Vector3f(), 0);
     private final Vector3f center;
     private float radius;
 
@@ -33,5 +35,24 @@ public final class Sphere {
 
     public void setRadius(float radius) {
         this.radius = radius;
+    }
+
+    @Override
+    public boolean isColliding(ICollision other) {
+        return false;
+    }
+
+    @Override
+    public void preIsColliding() {
+    }
+
+    @Override
+    public Collision getType() {
+        return Collision.SPHERE;
+    }
+
+    @Override
+    public IColliderRender getRenderer() {
+        return null;
     }
 }

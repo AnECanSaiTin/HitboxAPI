@@ -1,5 +1,6 @@
 package cn.anecansaitin.hitboxapi;
 
+import cn.anecansaitin.hitboxapi.common.HitboxDataAttachments;
 import com.mojang.logging.LogUtils;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -12,6 +13,6 @@ public class HitboxApi {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public HitboxApi(IEventBus modEventBus, ModContainer modContainer) {
-        System.out.println("hello");
+        HitboxDataAttachments.ATTACHMENTS.register(modEventBus);
     }
 }

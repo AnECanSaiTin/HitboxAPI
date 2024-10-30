@@ -1,9 +1,11 @@
-package cn.anecansaitin.hitboxapi;
+package cn.anecansaitin.hitboxapi.colliders;
 
+import cn.anecansaitin.hitboxapi.client.IColliderRender;
+import it.unimi.dsi.fastutil.Pair;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public class Capsule implements ICollision {
+public final class Capsule implements ICollision {
     private final Vector3f center;
     private final Quaternionf rotation;
     private final Vector3f direction;
@@ -20,39 +22,33 @@ public class Capsule implements ICollision {
         rotation.transform(direction);
     }
 
-    public boolean isCollision(Capsule other) {
-        //计算头尾点最值
-        Vector3f pointA1 = direction.mul(height, new Vector3f()).add(center);
-        Vector3f pointA2 = direction.mul(-height, new Vector3f()).add(center);
+    @Override
+    public boolean isColliding(ICollision other) {
+        preIsColliding();
+        other.preIsColliding();
 
-        Vector3f pointB1 = other.direction.mul(other.height, new Vector3f()).add(other.center);
-        Vector3f pointB2 = other.direction.mul(-other.height, new Vector3f()).add(other.center);
-
-        // 求两条线段的最短距离
-        float distance = CollisionUtil.getClosestDistanceBetweenSegmentsSqr(pointA1, pointA2, pointB1, pointB2);
-
-        //求两个球半径和
-        float totalRadius = (float) Math.pow(radius + other.radius, 2);
-        //距离小于等于半径和则碰撞
-        return distance <= totalRadius;
+        return switch (other.getType()) {
+            case CAPSULE -> CollisionUtil.isCollision(this, (Capsule) other);
+            case SPHERE -> CollisionUtil.isCollision(this, (Sphere) other);
+            case OBB -> CollisionUtil.isCollision(this, (OBB) other);
+        };
     }
 
     @Override
-    public boolean isColliding(ICollision other) {
+    public void preIsColliding() {
         if (shouldUpdateDirection) {
             updateDirection();
-            shouldUpdateDirection = false;
         }
-
-        return switch (other.getType()) {
-            case CAPSULE -> isCollision((Capsule) other);
-            default -> false;
-        };
     }
 
     @Override
     public Collision getType() {
         return Collision.CAPSULE;
+    }
+
+    @Override
+    public IColliderRender getRenderer() {
+        return null;
     }
 
     public Vector3f getCenter() {
@@ -87,6 +83,10 @@ public class Capsule implements ICollision {
         this.height = height;
     }
 
+    public Vector3f getDirection() {
+        return direction;
+    }
+
     public void markRotationDirty() {
         shouldUpdateDirection = true;
     }
@@ -94,5 +94,6 @@ public class Capsule implements ICollision {
     private void updateDirection() {
         direction.set(0, 0, 1);
         rotation.transform(direction);
+        shouldUpdateDirection = false;
     }
 }

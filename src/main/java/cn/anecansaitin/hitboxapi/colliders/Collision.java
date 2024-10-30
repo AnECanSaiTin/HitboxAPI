@@ -1,4 +1,4 @@
-package cn.anecansaitin.hitboxapi;
+package cn.anecansaitin.hitboxapi.colliders;
 
 public enum Collision {
     OBB,
