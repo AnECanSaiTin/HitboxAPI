@@ -1,9 +1,9 @@
-package cn.anecansaitin.hitboxapi.colliders;
+package cn.anecansaitin.hitboxapi.common.colliders;
 
-import cn.anecansaitin.hitboxapi.client.IColliderRender;
+import cn.anecansaitin.hitboxapi.client.colliders.render.IColliderRender;
 
 public interface IAABBCollision extends ICollision {
-    IColliderRender renderer = (poseStack, buffer, entity, red, green, blue, alpha) -> {};
+    IColliderRender renderer = (collision, poseStack, buffer, entity, red, green, blue, alpha) -> {};
 
     @Override
     default IColliderRender getRenderer() {

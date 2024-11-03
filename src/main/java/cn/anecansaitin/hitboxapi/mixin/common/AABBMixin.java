@@ -1,6 +1,6 @@
 package cn.anecansaitin.hitboxapi.mixin.common;
 
-import cn.anecansaitin.hitboxapi.colliders.IAABBCollision;
+import cn.anecansaitin.hitboxapi.common.colliders.IAABBCollision;
 import net.minecraft.world.phys.AABB;
 import org.spongepowered.asm.mixin.Mixin;
 

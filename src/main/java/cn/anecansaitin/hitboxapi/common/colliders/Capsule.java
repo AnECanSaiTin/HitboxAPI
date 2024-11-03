@@ -1,16 +1,15 @@
-package cn.anecansaitin.hitboxapi.colliders;
+package cn.anecansaitin.hitboxapi.common.colliders;
 
-import cn.anecansaitin.hitboxapi.client.IColliderRender;
-import it.unimi.dsi.fastutil.Pair;
+import cn.anecansaitin.hitboxapi.client.colliders.render.IColliderRender;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public final class Capsule implements ICollision {
-    private final Vector3f center;
-    private final Quaternionf rotation;
-    private final Vector3f direction;
-    private float height;
-    private float radius;
+    public final Vector3f center;
+    public final Quaternionf rotation;
+    public final Vector3f direction;
+    public float height;
+    public float radius;
     private boolean shouldUpdateDirection;
 
     public Capsule(Vector3f center, float radius, float height, Quaternionf rotation) {
@@ -37,42 +36,6 @@ public final class Capsule implements ICollision {
     @Override
     public IColliderRender getRenderer() {
         return null;
-    }
-
-    public Vector3f getCenter() {
-        return center;
-    }
-
-    public void setCenter(Vector3f center) {
-        this.center.set(center);
-    }
-
-    public Quaternionf getRotation() {
-        return rotation;
-    }
-
-    public void setRotation(Quaternionf rotation) {
-        this.rotation.set(rotation);
-    }
-
-    public float getRadius() {
-        return radius;
-    }
-
-    public void setRadius(float radius) {
-        this.radius = radius;
-    }
-
-    public float getHeight() {
-        return height;
-    }
-
-    public void setHeight(float height) {
-        this.height = height;
-    }
-
-    public Vector3f getDirection() {
-        return direction;
     }
 
     public void markRotationDirty() {

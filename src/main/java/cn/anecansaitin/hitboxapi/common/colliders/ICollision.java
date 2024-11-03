@@ -1,6 +1,6 @@
-package cn.anecansaitin.hitboxapi.colliders;
+package cn.anecansaitin.hitboxapi.common.colliders;
 
-import cn.anecansaitin.hitboxapi.client.IColliderRender;
+import cn.anecansaitin.hitboxapi.client.colliders.render.IColliderRender;
 import net.minecraft.world.phys.AABB;
 
 public interface ICollision {
@@ -15,6 +15,7 @@ public interface ICollision {
                     case SPHERE -> CollisionUtil.isCollision((Sphere) other, (OBB) this);
                     case CAPSULE -> CollisionUtil.isCollision((Capsule) other, (OBB) this);
                     case AABB -> CollisionUtil.isCollision((OBB) this, new OBB((AABB) other));
+                    case RAY -> CollisionUtil.isCollision((Ray) other, (OBB) this);
                 };
             }
             case SPHERE -> {
@@ -23,6 +24,7 @@ public interface ICollision {
                     case SPHERE -> CollisionUtil.isCollision((Sphere) this, (Sphere) other);
                     case CAPSULE -> CollisionUtil.isCollision((Capsule) other, (Sphere) this);
                     case AABB -> CollisionUtil.isCollision((Sphere) this, (AABB) other);
+                    case RAY -> CollisionUtil.isCollision((Ray) other, (Sphere) this);
                 };
             }
             case CAPSULE -> {
@@ -31,6 +33,7 @@ public interface ICollision {
                     case SPHERE -> CollisionUtil.isCollision((Capsule) this, (Sphere) other);
                     case CAPSULE -> CollisionUtil.isCollision((Capsule) this, (Capsule) other);
                     case AABB -> CollisionUtil.isCollision((Capsule) this, (AABB) other);
+                    case RAY -> CollisionUtil.isCollision((Ray) other, (Capsule) this);
                 };
             }
             case AABB -> {
@@ -39,6 +42,16 @@ public interface ICollision {
                     case SPHERE -> CollisionUtil.isCollision((Sphere) other, (AABB) this);
                     case CAPSULE -> CollisionUtil.isCollision((Capsule) other, (AABB) this);
                     case AABB -> ((AABB) this).intersects((AABB) other);
+                    case RAY -> CollisionUtil.isCollision((Ray) other, (AABB) this);
+                };
+            }
+            case RAY -> {
+                return switch (other.getType()) {
+                    case OBB -> CollisionUtil.isCollision((Ray) this, (OBB) other);
+                    case SPHERE -> CollisionUtil.isCollision((Ray) this, (Sphere) other);
+                    case CAPSULE -> CollisionUtil.isCollision((Ray) this, (Capsule) other);
+                    case AABB -> CollisionUtil.isCollision((Ray) this, (AABB) other);
+                    case RAY -> CollisionUtil.isCollision((Ray) this, (Ray) other);
                 };
             }
             default -> {

@@ -1,7 +1,8 @@
-package cn.anecansaitin.hitboxapi.colliders;
+package cn.anecansaitin.hitboxapi.common.colliders;
 
 import net.minecraft.world.phys.AABB;
-import org.joml.Quaternionf;
+import org.joml.Intersectionf;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 public final class CollisionUtil {
@@ -136,13 +137,13 @@ public final class CollisionUtil {
      * @return 在OBB上离待判定点最近的点
      */
     public static Vector3f getClosestPointOBB(Vector3f point, OBB obb) {
-        Vector3f nearP = obb.getCenter();
+        Vector3f nearP = obb.center;
         //求球心与OBB中心的距离向量 从OBB中心指向球心
-        Vector3f center2 = obb.getCenter();
+        Vector3f center2 = obb.center;
         Vector3f dist = point.sub(center2);
 
-        float[] extents = new float[]{obb.getHalfExtents().x, obb.getHalfExtents().y, obb.getHalfExtents().z};
-        Vector3f[] axes = obb.getRotationV();
+        float[] extents = new float[]{obb.halfExtents.x, obb.halfExtents.y, obb.halfExtents.z};
+        Vector3f[] axes = obb.axes;
 
         for (int i = 0; i < 3; i++) {
             //计算距离向量到OBB坐标轴的投影长度 即距离向量在OBB坐标系中的对应坐标轴的长度
@@ -155,18 +156,6 @@ public final class CollisionUtil {
         }
 
         return nearP;
-    }
-
-    private static boolean getSeparatingPlane(Vector3f RPos, Vector3f Plane, OBB box1, OBB box2) {
-        Vector3f v = new Vector3f();
-
-        return (Math.abs(RPos.dot(Plane)) >
-                (Math.abs((box1.getRotationV()[0].mul(box1.getHalfExtents().x, v)).dot(Plane)) +
-                        Math.abs((box1.getRotationV()[1].mul(box1.getHalfExtents().y, v)).dot(Plane)) +
-                        Math.abs((box1.getRotationV()[2].mul(box1.getHalfExtents().z, v)).dot(Plane)) +
-                        Math.abs((box2.getRotationV()[0].mul(box2.getHalfExtents().x, v)).dot(Plane)) +
-                        Math.abs((box2.getRotationV()[1].mul(box2.getHalfExtents().y, v)).dot(Plane)) +
-                        Math.abs((box2.getRotationV()[2].mul(box2.getHalfExtents().z, v)).dot(Plane))));
     }
 
     private static Vector3f getClosestPointAABB(Vector3f point, AABB aabb) {
@@ -186,17 +175,17 @@ public final class CollisionUtil {
      */
     public static boolean isCollision(Capsule capsule, Capsule other) {
         //计算头尾点最值
-        Vector3f pointA1 = capsule.getDirection().mul(capsule.getHeight(), new Vector3f()).add(capsule.getCenter());
-        Vector3f pointA2 = capsule.getDirection().mul(-capsule.getHeight(), new Vector3f()).add(capsule.getCenter());
+        Vector3f pointA1 = capsule.direction.mul(capsule.height, new Vector3f()).add(capsule.center);
+        Vector3f pointA2 = capsule.direction.mul(-capsule.height, new Vector3f()).add(capsule.center);
 
-        Vector3f pointB1 = other.getDirection().mul(other.getHeight(), new Vector3f()).add(other.getCenter());
-        Vector3f pointB2 = other.getDirection().mul(-other.getHeight(), new Vector3f()).add(other.getCenter());
+        Vector3f pointB1 = other.direction.mul(other.height, new Vector3f()).add(other.center);
+        Vector3f pointB2 = other.direction.mul(-other.height, new Vector3f()).add(other.center);
 
         // 求两条线段的最短距离
         float distance = CollisionUtil.getClosestDistanceBetweenSegmentsSqr(pointA1, pointA2, pointB1, pointB2);
 
         //求两个球半径和
-        float totalRadius = (float) Math.pow(capsule.getRadius() + other.getRadius(), 2);
+        float totalRadius = (float) Math.pow(capsule.radius + other.radius, 2);
         //距离小于等于半径和则碰撞
         return distance <= totalRadius;
     }
@@ -210,15 +199,15 @@ public final class CollisionUtil {
      */
     public static boolean isCollision(Capsule capsule, Sphere sphere) {
         //计算头尾点最值
-        Vector3f point1 = capsule.getDirection().mul(capsule.getHeight(), new Vector3f()).add(capsule.getCenter());
-        Vector3f point2 = capsule.getDirection().mul(-capsule.getHeight(), new Vector3f()).add(capsule.getCenter());
+        Vector3f point1 = capsule.direction.mul(capsule.height, new Vector3f()).add(capsule.center);
+        Vector3f point2 = capsule.direction.mul(-capsule.height, new Vector3f()).add(capsule.center);
 
-        Vector3f closest = CollisionUtil.getClosestPointOnSegment(point1, point2, sphere.getCenter());
+        Vector3f closest = CollisionUtil.getClosestPointOnSegment(point1, point2, sphere.center);
 
         //求两个球半径和
-        float totalRadius = (float) Math.pow(capsule.getRadius() + sphere.getRadius(), 2);
+        float totalRadius = (float) Math.pow(capsule.radius + sphere.radius, 2);
         //球两个球心之间的距离
-        float distance = closest.sub(sphere.getCenter()).lengthSquared();
+        float distance = closest.sub(sphere.center).lengthSquared();
         //距离小于等于半径和则碰撞
         return distance <= totalRadius;
     }
@@ -232,46 +221,43 @@ public final class CollisionUtil {
      */
     public static boolean isCollision(Capsule capsule, OBB obb) {
         //计算头尾点最值
-        Vector3f point1 = capsule.getDirection().mul(capsule.getHeight(), new Vector3f()).add(capsule.getCenter());
-        Vector3f point2 = capsule.getDirection().mul(-capsule.getHeight(), new Vector3f()).add(capsule.getCenter());
+        Vector3f point1 = capsule.direction.mul(capsule.height, new Vector3f()).add(capsule.center);
+        Vector3f point2 = capsule.direction.mul(-capsule.height, new Vector3f()).add(capsule.center);
 
-        Vector3f closest1 = getClosestPointOnSegment(point1, point2, obb.getCenter());
+        Vector3f closest1 = getClosestPointOnSegment(point1, point2, obb.center);
         Vector3f closest2 = getClosestPointOBB(closest1, obb);
 
         //求胶囊体半径平方
-        float totalRadius = (float) Math.pow(capsule.getRadius(), 2);
+        float totalRadius = (float) Math.pow(capsule.radius, 2);
         //求两个点之间的距离
         float distance = (closest1.sub(closest2)).lengthSquared();
         //距离小于等于半径平方则碰撞
         return distance <= totalRadius;
     }
 
-    /**
-     * 判断OBB与OBB是否碰撞
-     *
-     * @param obb   OBB盒
-     * @param other OBB盒
-     * @return 有碰撞返回true
-     */
     public static boolean isCollision(OBB obb, OBB other) {
-        Vector3f RPos = other.getCenter().sub(obb.getCenter(), new Vector3f());
-        Vector3f v = new Vector3f();
+        //joml居然实现了obb碰撞
+        return Intersectionf.testObOb(obb.center, obb.axes[0], obb.axes[1], obb.axes[2], obb.halfExtents, other.center, other.axes[0], other.axes[1], other.axes[2], other.halfExtents);
+    }
 
-        return !(getSeparatingPlane(RPos, obb.getRotationV()[0], obb, other) ||
-                getSeparatingPlane(RPos, obb.getRotationV()[1], obb, other) ||
-                getSeparatingPlane(RPos, obb.getRotationV()[2], obb, other) ||
-                getSeparatingPlane(RPos, other.getRotationV()[0], obb, other) ||
-                getSeparatingPlane(RPos, other.getRotationV()[1], obb, other) ||
-                getSeparatingPlane(RPos, other.getRotationV()[2], obb, other) ||
-                getSeparatingPlane(RPos, obb.getRotationV()[0].cross(other.getRotationV()[0], v), obb, other) ||
-                getSeparatingPlane(RPos, obb.getRotationV()[0].cross(other.getRotationV()[1], v), obb, other) ||
-                getSeparatingPlane(RPos, obb.getRotationV()[0].cross(other.getRotationV()[2], v), obb, other) ||
-                getSeparatingPlane(RPos, obb.getRotationV()[1].cross(other.getRotationV()[0], v), obb, other) ||
-                getSeparatingPlane(RPos, obb.getRotationV()[1].cross(other.getRotationV()[1], v), obb, other) ||
-                getSeparatingPlane(RPos, obb.getRotationV()[1].cross(other.getRotationV()[2], v), obb, other) ||
-                getSeparatingPlane(RPos, obb.getRotationV()[2].cross(other.getRotationV()[0], v), obb, other) ||
-                getSeparatingPlane(RPos, obb.getRotationV()[2].cross(other.getRotationV()[1], v), obb, other) ||
-                getSeparatingPlane(RPos, obb.getRotationV()[2].cross(other.getRotationV()[2], v), obb, other));
+    private static boolean notInteractiveOBB(Vector3f[] vertices1, Vector3f[] vertices2, Vector3f axis) {
+        //计算OBB包围盒在分离轴上的投影极限值
+        float[] limit1 = getProjectionLimit(vertices1, axis);
+        float[] limit2 = getProjectionLimit(vertices2, axis);
+        //两个包围盒极限值不相交，则不碰撞
+        return limit1[0] > limit2[1] || limit2[0] > limit1[1];
+    }
+
+    private static float[] getProjectionLimit(Vector3f[] vertices, Vector3f axis) {
+        float[] result = new float[]{Float.MAX_VALUE, Float.MIN_VALUE};
+
+        for (Vector3f vertex : vertices) {
+            float dot = vertex.dot(axis);
+            result[0] = Math.min(dot, result[0]);
+            result[1] = Math.max(dot, result[1]);
+        }
+
+        return result;
     }
 
     /**
@@ -283,10 +269,10 @@ public final class CollisionUtil {
      */
     public static boolean isCollision(Sphere sphere, OBB obb) {
         //求最近点
-        Vector3f nearP = getClosestPointOBB(sphere.getCenter(), obb);
+        Vector3f nearP = getClosestPointOBB(sphere.center, obb);
         //与AABB检测原理相同
-        float distance = nearP.sub(sphere.getCenter()).lengthSquared();
-        float radius = (float) Math.pow(sphere.getRadius(), 2);
+        float distance = nearP.sub(sphere.center).lengthSquared();
+        float radius = (float) Math.pow(sphere.radius, 2);
         return distance <= radius;
     }
 
@@ -298,7 +284,7 @@ public final class CollisionUtil {
      * @return 有碰撞返回true
      */
     public static boolean isCollision(Sphere sphere, Sphere other) {
-        return sphere.getCenter().distanceSquared(other.getCenter()) <= Math.pow(sphere.getRadius() + other.getRadius(), 2);
+        return sphere.center.distanceSquared(other.center) <= Math.pow(sphere.radius + other.radius, 2);
     }
 
     /**
@@ -310,34 +296,162 @@ public final class CollisionUtil {
      */
     public static boolean isCollision(Sphere sphere, AABB aabb) {
         //求出最近点
-        Vector3f center = sphere.getCenter();
+        Vector3f center = sphere.center;
         Vector3f nearP = getClosestPointAABB(center, aabb);
         //求出最近点与球心的距离
         float distance = nearP.sub(center).lengthSquared();
-        float radius = (float) Math.pow(sphere.getRadius(), 2);
+        float radius = (float) Math.pow(sphere.radius, 2);
         //距离小于半径则碰撞
         return distance <= radius;
     }
 
     /**
      * 判断胶囊体与AABB盒是否碰撞
+     *
      * @param capsule 胶囊体
-     * @param aabb AABB盒
+     * @param aabb    AABB盒
      * @return 有碰撞返回true
      */
     public static boolean isCollision(Capsule capsule, AABB aabb) {
         //计算头尾点最值
-        Vector3f pointA1 = capsule.getDirection().mul(capsule.getDirection().y, new Vector3f()).add(capsule.getCenter());
-        Vector3f pointA2 = capsule.getDirection().mul(-capsule.getDirection().y, new Vector3f()).add(capsule.getCenter());
+        Vector3f pointA1 = capsule.direction.mul(capsule.direction.y, new Vector3f()).add(capsule.center);
+        Vector3f pointA2 = capsule.direction.mul(-capsule.direction.y, new Vector3f()).add(capsule.center);
 
         Vector3f closest1 = getClosestPointOnSegment(pointA1, pointA2, aabb.getCenter().toVector3f());
         Vector3f closest2 = getClosestPointAABB(closest1, aabb);
 
         //求胶囊体半径平方
-        float totalRadius = (float) Math.pow(capsule.getRadius(), 2);
+        float totalRadius = (float) Math.pow(capsule.radius, 2);
         //求两个点之间的距离
         float distance = closest1.sub(closest2).lengthSquared();
+
         //距离小于等于半径平方则碰撞
         return distance <= totalRadius;
+    }
+
+    /**
+     * 判断射线与AABB盒是否碰撞
+     *
+     * @param ray  射线
+     * @param aabb AABB盒
+     * @return 有碰撞返回true
+     */
+    public static boolean isCollision(Ray ray, AABB aabb) {
+        return Intersectionf.testRayAab(ray.origin, ray.direction, new Vector3f((float) aabb.minX, (float) aabb.minY, (float) aabb.minZ), new Vector3f((float) aabb.maxX, (float) aabb.maxY, (float) aabb.maxZ));
+    }
+
+    /**
+     * 判断射线与球体是否碰撞
+     *
+     * @param ray    射线
+     * @param sphere 球体
+     * @return 有碰撞返回true
+     */
+    public static boolean isCollision(Ray ray, Sphere sphere) {
+        return Intersectionf.testRaySphere(ray.origin, ray.direction, sphere.center, sphere.radius);
+    }
+
+    /**
+     * 判断射线与OBB盒是否碰撞
+     *
+     * @param ray 射线
+     * @param obb OBB盒
+     * @return 有碰撞返回true
+     */
+    public static boolean isCollision(Ray ray, OBB obb) {
+
+        Vector3f v = new Vector3f();
+
+        //判断不在OBB内
+        Vector3f centerDis = ray.origin.sub(obb.center, v);
+        float ray2ObbX = centerDis.dot(obb.axes[0]);
+        float ray2ObbY = centerDis.dot(obb.axes[1]);
+        float ray2ObbZ = centerDis.dot(obb.axes[2]);
+        boolean checkNotInside = ray2ObbX < -obb.halfExtents.x || ray2ObbX > obb.halfExtents.x ||
+                ray2ObbY < -obb.halfExtents.y || ray2ObbY > obb.halfExtents.y ||
+                ray2ObbZ < -obb.halfExtents.z || ray2ObbZ > obb.halfExtents.z;
+        //判断反向情况
+        boolean checkFoward = obb.center.sub(obb.center, v).dot(ray.direction) < 0;
+
+        if (checkNotInside && checkFoward) {
+            return false;
+        }
+
+        //判断是否相交
+        Vector3f min = new Vector3f();
+        Vector3f minP = obb.vertices[4].sub(ray.origin, v);
+        min.x = minP.dot(obb.axes[0]);
+        min.y = minP.dot(obb.axes[1]);
+        min.z = minP.dot(obb.axes[2]);
+
+        Vector3f max = new Vector3f();
+        Vector3f maxP = obb.vertices[2].sub(ray.origin, v);
+        max.x = maxP.dot(obb.axes[0]);
+        max.y = maxP.dot(obb.axes[1]);
+        max.z = maxP.dot(obb.axes[2]);
+
+
+        Vector3f projection = new Vector3f();
+        projection.x = 1 / ray.direction.dot(obb.axes[2]);
+
+        Vector3f pMin = min.mul(projection);
+        Vector3f pMax = max.mul(projection);
+
+        if (projection.x < 0) {
+            float t = pMin.x;
+            pMin.x = pMax.x;
+            pMax.x = t;
+        }
+
+        if (projection.y < 0) {
+            float t = pMin.y;
+            pMin.y = pMax.y;
+            pMax.y = t;
+        }
+
+        if (projection.z < 0) {
+            float t = pMin.z;
+            pMin.z = pMax.z;
+            pMax.z = t;
+        }
+
+
+        float n = Math.max(Math.max(pMin.x, pMin.y), pMin.z);
+        float f = Math.min(Math.min(pMax.x, pMax.y), pMax.z);
+
+        if (!checkNotInside) {
+/*
+            获得碰撞点
+            Vector3f point = ray.direction.mul(f).add(ray.origin);
+
+*/
+        } else {
+            return n < f && ray.length >= n;
+
+            //获得碰撞点
+//            Vector3f point = ray.direction.mul(n, v).add(ray.origin);
+
+        }
+
+        return true;
+    }
+
+    public static boolean isCollision(Ray ray, Capsule capsule) {
+        float halfHeight = capsule.height / 2.0f;
+        Vector3f startPoint = capsule.direction.mul(-halfHeight, new Vector3f()).add(capsule.center);
+        Vector3f endPoint = capsule.direction.mul(halfHeight, new Vector3f()).add(capsule.center);
+        float sqr = getClosestDistanceBetweenSegmentsSqr(ray.origin, ray.getEnd(), startPoint, endPoint);
+        return sqr <= Math.pow(capsule.radius, 2);
+    }
+
+    /**
+     * 判断射线与射线是否碰撞<br/>
+     * 这有必要吗🤣
+     * @param ray  射线
+     * @param other 射线
+     * @return 有碰撞返回true
+     */
+    public static boolean isCollision(Ray ray, Ray other) {
+        return isSegmentCross(ray.origin, ray.getEnd(), other.origin, other.getEnd());
     }
 }

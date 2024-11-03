@@ -1,5 +1,5 @@
 {
   "net/minecraft/world/phys/AABB": [
-    "cn/anecansaitin/hitboxapi/colliders/IAABBCollision"
+    "cn/anecansaitin/hitboxapi/common/colliders/IAABBCollision"
   ]
 }
