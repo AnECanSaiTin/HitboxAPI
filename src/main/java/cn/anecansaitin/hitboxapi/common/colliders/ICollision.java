@@ -5,6 +5,9 @@ import net.minecraft.world.phys.AABB;
 
 public interface ICollision {
     default boolean isColliding(ICollision other) {
+        if (other == null) return false;
+        if (other == this) return true;
+
         preIsColliding();
         other.preIsColliding();
 

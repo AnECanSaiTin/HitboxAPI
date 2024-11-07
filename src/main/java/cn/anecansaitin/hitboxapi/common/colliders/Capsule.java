@@ -1,5 +1,6 @@
 package cn.anecansaitin.hitboxapi.common.colliders;
 
+import cn.anecansaitin.hitboxapi.client.colliders.render.CapsuleRender;
 import cn.anecansaitin.hitboxapi.client.colliders.render.IColliderRender;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -35,7 +36,7 @@ public final class Capsule implements ICollision {
 
     @Override
     public IColliderRender getRenderer() {
-        return null;
+        return CapsuleRender.INSTANCE;
     }
 
     public void markRotationDirty() {

@@ -1,9 +1,10 @@
 package cn.anecansaitin.hitboxapi.common.colliders;
 
 import cn.anecansaitin.hitboxapi.client.colliders.render.IColliderRender;
+import cn.anecansaitin.hitboxapi.client.colliders.render.RayRender;
 import org.joml.Vector3f;
 
-public class Ray implements ICollision{
+public final class Ray implements ICollision{
     public final Vector3f origin; // 射线的起点
     public final Vector3f direction;
     public final float length; // 射线的长度
@@ -29,6 +30,6 @@ public class Ray implements ICollision{
 
     @Override
     public IColliderRender getRenderer() {
-        return null;
+        return RayRender.INSTANCE;
     }
 }

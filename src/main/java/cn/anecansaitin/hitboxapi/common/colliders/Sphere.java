@@ -1,6 +1,7 @@
 package cn.anecansaitin.hitboxapi.common.colliders;
 
 import cn.anecansaitin.hitboxapi.client.colliders.render.IColliderRender;
+import cn.anecansaitin.hitboxapi.client.colliders.render.SphereRender;
 import org.joml.Vector3f;
 
 public final class Sphere implements ICollision {
@@ -24,6 +25,6 @@ public final class Sphere implements ICollision {
 
     @Override
     public IColliderRender getRenderer() {
-        return null;
+        return SphereRender.INSTANCE;
     }
 }

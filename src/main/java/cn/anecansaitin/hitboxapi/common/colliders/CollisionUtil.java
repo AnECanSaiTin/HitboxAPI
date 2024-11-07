@@ -137,10 +137,9 @@ public final class CollisionUtil {
      * @return 在OBB上离待判定点最近的点
      */
     public static Vector3f getClosestPointOBB(Vector3f point, OBB obb) {
-        Vector3f nearP = obb.center;
+        Vector3f nearP = new Vector3f(obb.center);
         //求球心与OBB中心的距离向量 从OBB中心指向球心
-        Vector3f center2 = obb.center;
-        Vector3f dist = point.sub(center2);
+        Vector3f dist = point.sub(nearP, new Vector3f());
 
         float[] extents = new float[]{obb.halfExtents.x, obb.halfExtents.y, obb.halfExtents.z};
         Vector3f[] axes = obb.axes;
