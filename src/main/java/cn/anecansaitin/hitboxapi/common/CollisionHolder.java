@@ -1,9 +1,8 @@
 package cn.anecansaitin.hitboxapi.common;
 
+import cn.anecansaitin.hitboxapi.common.colliders.Capsule;
 import cn.anecansaitin.hitboxapi.common.colliders.ICollision;
-import cn.anecansaitin.hitboxapi.common.colliders.OBB;
-import cn.anecansaitin.hitboxapi.common.colliders.Sphere;
-import net.minecraft.world.phys.AABB;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.HashMap;
@@ -20,16 +19,16 @@ public class CollisionHolder {
     public Map<String, ICollision> hitBox = new HashMap<>();
 
     private void addTest() {
-        hurtBox.put("test", new Sphere(new Vector3f(0, 0, 0), 1));
-        hitBox.put("test", new AABB(0, 0, 0, 1, 1, 1));
+        hurtBox.put("test", new Capsule(new Vector3f(1, 0, 0), 0.5f, 1, new Quaternionf()));
+        hitBox.put("test", new Capsule(new Vector3f(-1, 0, 0), 0.5f, 1, new Quaternionf()));
     }
 
-    private Sphere getTestU(){
-        return (Sphere) hurtBox.get("test");
+    private Capsule getTestU(){
+        return (Capsule) hurtBox.get("test");
     }
 
-    private AABB getTestI(){
-        return (AABB) hitBox.get("test");
+    private Capsule getTestI(){
+        return (Capsule) hitBox.get("test");
     }
 
     private boolean test(){

@@ -18,7 +18,7 @@ public final class Capsule implements ICollision {
         this.radius = radius;
         this.height = height;
         this.rotation = rotation;
-        direction = new Vector3f(0, 0, 1);
+        direction = new Vector3f(0, 1, 0);
         rotation.transform(direction);
     }
 
@@ -44,7 +44,7 @@ public final class Capsule implements ICollision {
     }
 
     private void updateDirection() {
-        direction.set(0, 0, 1);
+        direction.set(0, 1, 0);
         rotation.transform(direction);
         shouldUpdateDirection = false;
     }

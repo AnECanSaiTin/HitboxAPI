@@ -18,15 +18,20 @@ public class CapsuleRender implements IColliderRender {
             generateCylinder(1, 1, 20)
     };
 
-    private CapsuleRender() {}
+    private CapsuleRender() {
+    }
 
     @Override
     public void render(ICollision collision, PoseStack poseStack, VertexConsumer buffer, Entity entity, float red, float green, float blue, float alpha) {
+//        CollisionHolder holder = Minecraft.getInstance().player.getData(HitboxDataAttachments.COLLISION);
+//        holder.hurtBox.get("test").isColliding(holder.hitBox.get("test"));
+
         Capsule capsule = (Capsule) collision;
         poseStack.pushPose();
+        Vector3f center = capsule.center;
+        poseStack.translate(center.x, center.y, center.z);
         poseStack.mulPose(capsule.rotation);
         PoseStack.Pose pose = poseStack.last();
-        Vector3f center = capsule.center;
         float radius = capsule.radius;
         float height = capsule.height;
         float yOffset = capsule.height / 2;
@@ -38,9 +43,9 @@ public class CapsuleRender implements IColliderRender {
             float[] normal = vertices[1];
 
             for (int j = 0; j < vertex.length; j += 3) {
-                float x = vertex[j] * radius + center.x;
-                float y = vertex[j + 1] * radius + yOffset + center.y;
-                float z = vertex[j + 2] * radius + center.z;
+                float x = vertex[j] * radius;
+                float y = vertex[j + 1] * radius + yOffset;
+                float z = vertex[j + 2] * radius;
 
                 float nx = normal[j];
                 float ny = normal[j + 1];
@@ -57,9 +62,9 @@ public class CapsuleRender implements IColliderRender {
         float[] vertex = vertices[0];
 
         for (int j = 0; j < vertex.length; j += 3) {
-            float x = vertex[j] * radius + center.x;
-            float y = vertex[j + 1] * height + center.y;
-            float z = vertex[j + 2] * radius + center.z;
+            float x = vertex[j] * radius;
+            float y = vertex[j + 1] * height;
+            float z = vertex[j + 2] * radius;
 
             buffer.addVertex(pose, x, y, z).setColor(red, green, blue, alpha).setNormal(pose, 0, 1, 0);
         }

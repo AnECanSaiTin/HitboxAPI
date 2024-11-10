@@ -2,7 +2,6 @@ package cn.anecansaitin.hitboxapi.common.colliders;
 
 import net.minecraft.world.phys.AABB;
 import org.joml.Intersectionf;
-import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 public final class CollisionUtil {
@@ -60,7 +59,80 @@ public final class CollisionUtil {
      * @return 两个线段最近距离的平方
      */
     public static float getClosestDistanceBetweenSegmentsSqr(Vector3f start1, Vector3f end1, Vector3f start2, Vector3f end2) {
-        Vector3f line1 = end1.sub(start1, new Vector3f());
+        Vector3f u = new Vector3f(end1).sub(start1);
+        Vector3f v = new Vector3f(end2).sub(start2);
+        Vector3f w = new Vector3f(start1).sub(start2);
+
+        float a = u.dot(u); // u*u
+        float b = u.dot(v); // u*v
+        float c = v.dot(v); // v*v
+        float d = u.dot(w); // u*w
+        float e = v.dot(w); // v*w
+        float dt = a * c - b * b;
+
+        float sd = dt;
+        float td = dt;
+
+        float sn; // sn = be-cd
+        float tn; // tn = ae-bd
+
+        if (Math.abs(dt - 0) < 1e-6) {
+            // 两直线平行
+            sn = 0;    // 在s上指定取s0
+            sd = 1;   // 防止计算时除0错误
+
+            tn = e;      // 按(公式3)求tc
+            td = c;
+        } else {
+            sn = (b * e - c * d);
+            tn = (a * e - b * d);
+            if (sn < 0) {
+                // 最近点在s起点以外，同平行条件
+                sn = 0;
+                tn = e;
+                td = c;
+            } else if (sn > sd) {
+                // 最近点在s终点以外(即sc>1,则取sc=1)
+                sn = sd;
+                tn = e + b; // 按(公式3)计算
+                td = c;
+            }
+        }
+        if (tn < 0.0) {
+            // 最近点在t起点以外
+            tn = 0;
+            if (-d < 0) // 按(公式2)计算，如果等号右边小于0，则sc也小于零，取sc=0
+                sn = 0;
+            else if (-d > a) // 按(公式2)计算，如果sc大于1，取sc=1
+                sn = sd;
+            else {
+                sn = -d;
+                sd = a;
+            }
+        } else if (tn > td) {
+            tn = td;
+            if ((-d + b) < 0.0)
+                sn = 0;
+            else if ((-d + b) > a)
+                sn = sd;
+            else {
+                sn = (-d + b);
+                sd = a;
+            }
+        }
+
+        float sc;
+        float tc;
+
+        if (Math.abs(sn - 0) < 1e-6) sc = 0.0F;
+        else sc = sn / sd;
+
+        if (Math.abs(tn - 0) < 1e-6) tc = 0.0F;
+        else tc = tn / td;
+
+        Vector3f dP = new Vector3f(w).add(u.mul(sc)).sub(v.mul(tc));
+        return dP.dot(dP);
+/*        Vector3f line1 = end1.sub(start1, new Vector3f());
         Vector3f line2 = end2.sub(start2, new Vector3f());
         Vector3f v1 = new Vector3f(),
                 v2 = new Vector3f();
@@ -126,7 +198,7 @@ public final class CollisionUtil {
             }
         }
 
-        return dis;
+        return dis;*/
     }
 
     /**
@@ -174,11 +246,13 @@ public final class CollisionUtil {
      */
     public static boolean isCollision(Capsule capsule, Capsule other) {
         //计算头尾点最值
-        Vector3f pointA1 = capsule.direction.mul(capsule.height, new Vector3f()).add(capsule.center);
-        Vector3f pointA2 = capsule.direction.mul(-capsule.height, new Vector3f()).add(capsule.center);
+        float h = capsule.height / 2;
+        Vector3f pointA1 = capsule.direction.mul(h, new Vector3f()).add(capsule.center);
+        Vector3f pointA2 = capsule.direction.mul(-h, new Vector3f()).add(capsule.center);
 
-        Vector3f pointB1 = other.direction.mul(other.height, new Vector3f()).add(other.center);
-        Vector3f pointB2 = other.direction.mul(-other.height, new Vector3f()).add(other.center);
+        h = other.height / 2;
+        Vector3f pointB1 = other.direction.mul(h, new Vector3f()).add(other.center);
+        Vector3f pointB2 = other.direction.mul(-h, new Vector3f()).add(other.center);
 
         // 求两条线段的最短距离
         float distance = CollisionUtil.getClosestDistanceBetweenSegmentsSqr(pointA1, pointA2, pointB1, pointB2);
