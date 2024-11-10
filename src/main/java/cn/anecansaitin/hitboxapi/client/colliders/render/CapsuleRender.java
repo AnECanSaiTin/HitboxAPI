@@ -23,9 +23,6 @@ public class CapsuleRender implements IColliderRender {
 
     @Override
     public void render(ICollision collision, PoseStack poseStack, VertexConsumer buffer, Entity entity, float red, float green, float blue, float alpha) {
-//        CollisionHolder holder = Minecraft.getInstance().player.getData(HitboxDataAttachments.COLLISION);
-//        holder.hurtBox.get("test").isColliding(holder.hitBox.get("test"));
-
         Capsule capsule = (Capsule) collision;
         poseStack.pushPose();
         Vector3f center = capsule.center;

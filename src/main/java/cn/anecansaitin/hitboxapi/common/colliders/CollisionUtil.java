@@ -237,9 +237,29 @@ public final class CollisionUtil {
         return nearP;
     }
 
+    private static boolean notInteractiveOBB(Vector3f[] vertices1, Vector3f[] vertices2, Vector3f axis) {
+        //计算OBB包围盒在分离轴上的投影极限值
+        float[] limit1 = getProjectionLimit(vertices1, axis);
+        float[] limit2 = getProjectionLimit(vertices2, axis);
+        //两个包围盒极限值不相交，则不碰撞
+        return limit1[0] > limit2[1] || limit2[0] > limit1[1];
+    }
+
+    private static float[] getProjectionLimit(Vector3f[] vertices, Vector3f axis) {
+        float[] result = new float[]{Float.MAX_VALUE, Float.MIN_VALUE};
+
+        for (Vector3f vertex : vertices) {
+            float dot = vertex.dot(axis);
+            result[0] = Math.min(dot, result[0]);
+            result[1] = Math.max(dot, result[1]);
+        }
+
+        return result;
+    }
+
     /**
      * 判断两个胶囊体是否碰撞
-     *
+     * 
      * @param capsule 胶囊体
      * @param other   胶囊体
      * @return 碰撞返回true
@@ -265,15 +285,16 @@ public final class CollisionUtil {
 
     /**
      * 判断胶囊体与球体是否碰撞
-     *
+     * 
      * @param capsule 胶囊体
      * @param sphere  球体
      * @return 有碰撞返回true
      */
     public static boolean isCollision(Capsule capsule, Sphere sphere) {
         //计算头尾点最值
-        Vector3f point1 = capsule.direction.mul(capsule.height, new Vector3f()).add(capsule.center);
-        Vector3f point2 = capsule.direction.mul(-capsule.height, new Vector3f()).add(capsule.center);
+        float height = capsule.height / 2;
+        Vector3f point1 = capsule.direction.mul(height, new Vector3f()).add(capsule.center);
+        Vector3f point2 = capsule.direction.mul(-height, new Vector3f()).add(capsule.center);
 
         Vector3f closest = CollisionUtil.getClosestPointOnSegment(point1, point2, sphere.center);
 
@@ -287,15 +308,16 @@ public final class CollisionUtil {
 
     /**
      * 判断胶囊体与OBB是否碰撞
-     *
+     * 
      * @param capsule 胶囊体
      * @param obb     OBB盒
      * @return 有碰撞返回true
      */
     public static boolean isCollision(Capsule capsule, OBB obb) {
         //计算头尾点最值
-        Vector3f point1 = capsule.direction.mul(capsule.height, new Vector3f()).add(capsule.center);
-        Vector3f point2 = capsule.direction.mul(-capsule.height, new Vector3f()).add(capsule.center);
+        float height = capsule.height / 2;
+        Vector3f point1 = capsule.direction.mul(height, new Vector3f()).add(capsule.center);
+        Vector3f point2 = capsule.direction.mul(-height, new Vector3f()).add(capsule.center);
 
         Vector3f closest1 = getClosestPointOnSegment(point1, point2, obb.center);
         Vector3f closest2 = getClosestPointOBB(closest1, obb);
@@ -308,34 +330,21 @@ public final class CollisionUtil {
         return distance <= totalRadius;
     }
 
+    /**
+     * 判断OBB盒与OBB盒是否碰撞
+     * 
+     * @param obb OBB盒
+     * @param other OBB盒
+     * @return 有碰撞返回true
+     */
     public static boolean isCollision(OBB obb, OBB other) {
         //joml居然实现了obb碰撞
         return Intersectionf.testObOb(obb.center, obb.axes[0], obb.axes[1], obb.axes[2], obb.halfExtents, other.center, other.axes[0], other.axes[1], other.axes[2], other.halfExtents);
     }
 
-    private static boolean notInteractiveOBB(Vector3f[] vertices1, Vector3f[] vertices2, Vector3f axis) {
-        //计算OBB包围盒在分离轴上的投影极限值
-        float[] limit1 = getProjectionLimit(vertices1, axis);
-        float[] limit2 = getProjectionLimit(vertices2, axis);
-        //两个包围盒极限值不相交，则不碰撞
-        return limit1[0] > limit2[1] || limit2[0] > limit1[1];
-    }
-
-    private static float[] getProjectionLimit(Vector3f[] vertices, Vector3f axis) {
-        float[] result = new float[]{Float.MAX_VALUE, Float.MIN_VALUE};
-
-        for (Vector3f vertex : vertices) {
-            float dot = vertex.dot(axis);
-            result[0] = Math.min(dot, result[0]);
-            result[1] = Math.max(dot, result[1]);
-        }
-
-        return result;
-    }
-
     /**
      * 判断球体与OBB是否碰撞
-     *
+     * 
      * @param sphere 球体
      * @param obb    OBB盒
      * @return 有碰撞返回true
@@ -351,7 +360,7 @@ public final class CollisionUtil {
 
     /**
      * 判断球体与球体是否碰撞
-     *
+     * 
      * @param sphere 球体
      * @param other  球体
      * @return 有碰撞返回true
@@ -362,7 +371,7 @@ public final class CollisionUtil {
 
     /**
      * 判断球体与AABB盒是否碰撞
-     *
+     * 
      * @param sphere 球体
      * @param aabb   AABB盒
      * @return 有碰撞返回true
@@ -380,15 +389,16 @@ public final class CollisionUtil {
 
     /**
      * 判断胶囊体与AABB盒是否碰撞
-     *
+     * 
      * @param capsule 胶囊体
      * @param aabb    AABB盒
      * @return 有碰撞返回true
      */
     public static boolean isCollision(Capsule capsule, AABB aabb) {
         //计算头尾点最值
-        Vector3f pointA1 = capsule.direction.mul(capsule.direction.y, new Vector3f()).add(capsule.center);
-        Vector3f pointA2 = capsule.direction.mul(-capsule.direction.y, new Vector3f()).add(capsule.center);
+        float height = capsule.height / 2;
+        Vector3f pointA1 = capsule.direction.mul(height, new Vector3f()).add(capsule.center);
+        Vector3f pointA2 = capsule.direction.mul(-height, new Vector3f()).add(capsule.center);
 
         Vector3f closest1 = getClosestPointOnSegment(pointA1, pointA2, aabb.getCenter().toVector3f());
         Vector3f closest2 = getClosestPointAABB(closest1, aabb);
@@ -404,7 +414,7 @@ public final class CollisionUtil {
 
     /**
      * 判断射线与AABB盒是否碰撞
-     *
+     * 
      * @param ray  射线
      * @param aabb AABB盒
      * @return 有碰撞返回true
@@ -415,7 +425,7 @@ public final class CollisionUtil {
 
     /**
      * 判断射线与球体是否碰撞
-     *
+     * 
      * @param ray    射线
      * @param sphere 球体
      * @return 有碰撞返回true
@@ -426,7 +436,7 @@ public final class CollisionUtil {
 
     /**
      * 判断射线与OBB盒是否碰撞
-     *
+     * 
      * @param ray 射线
      * @param obb OBB盒
      * @return 有碰撞返回true
@@ -492,23 +502,20 @@ public final class CollisionUtil {
         float n = Math.max(Math.max(pMin.x, pMin.y), pMin.z);
         float f = Math.min(Math.min(pMax.x, pMax.y), pMax.z);
 
-        if (!checkNotInside) {
-/*
-            获得碰撞点
-            Vector3f point = ray.direction.mul(f).add(ray.origin);
-
-*/
-        } else {
+        if (checkNotInside) {
             return n < f && ray.length >= n;
-
-            //获得碰撞点
-//            Vector3f point = ray.direction.mul(n, v).add(ray.origin);
-
         }
 
         return true;
     }
 
+    /**
+     * 判断射线与胶囊体是否碰撞
+     * 
+     * @param ray 射线
+     * @param capsule 胶囊体
+     * @return 有碰撞返回true
+     */
     public static boolean isCollision(Ray ray, Capsule capsule) {
         float halfHeight = capsule.height / 2.0f;
         Vector3f startPoint = capsule.direction.mul(-halfHeight, new Vector3f()).add(capsule.center);
