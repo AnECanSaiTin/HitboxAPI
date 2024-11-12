@@ -7,10 +7,16 @@
 - Sphere
 - Capsule
 - Ray
+- Compound
+  - Multiple collision boxes can be combined into one.
+  - Composite collision boxes can be nested.
 
 ### How to Use
 
-Create a new collision box object wherever you need to perform collision detection, and use **ICollision#isColliding(ICollision other)** to determine if a collision has occurred.
+Create a new collision box object wherever collision detection is needed, and determine whether a collision has occurred using **ICollision#isColliding**.
+- **isColliding(ICollision other)** is only applicable to collision boxes in the same coordinate system.
+- **isColliding(BoxPoseStack poseStack, ICollision other, BoxPoseStack otherPoseStack)** is applicable to collision boxes in different coordinate systems. Ensure that the two BoxPoseStacks can transform the collision boxes into the same coordinate system.
+
 
 For entities (Entity), you can cache the collision box by attaching **HitboxDataAttachments#COLLISION**. The cached collision box can be rendered by pressing **F3 + B**. Note that this Data does not have a synchronization implementation yet.
 

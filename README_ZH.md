@@ -5,12 +5,17 @@
 
 - 方向包围盒（OBB）
 - 球体（Sphere）
-- 胶囊体（Capsule)
+- 胶囊体（Capsule）
 - 射线（Ray）
+- 复合碰撞箱（Compound）
+  - 可将多个碰撞箱组合成一个
+  - 可嵌套复合碰撞箱
 
 ### 如何使用
 
-在任何需要进行碰撞检测的地方新建一个碰撞箱对象，并通过**ICollision#isColliding(ICollision other)** 来判断是否发生碰撞。
+在任何需要进行碰撞检测的地方新建一个碰撞箱对象，并通过**ICollision#isColliding** 来判断是否发生碰撞。
+- **isColliding(ICollision other)** 仅适用于处于相同坐标系的碰撞箱
+- **isColliding(BoxPoseStack poseStack, ICollision other, BoxPoseStack otherPoseStack)** 适用于处于不同坐标系的碰撞箱。需确保两个BoxPoseStack可以分别将碰撞箱转换为相同坐标系。
 
 对于实体（Entity），可以通过附加**HitboxDataAttachments#COLLISION** 来实现碰撞箱的缓存。通过此缓存的碰撞箱可以通过**F3 + B** 
 打开碰撞箱渲染。注意，该Data暂无同步实现。
