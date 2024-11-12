@@ -14,6 +14,7 @@ public final class OBB implements ICollision {
     public final Quaternionf rotation;
     public final Vector3f globalCenter;
 
+    public boolean disable;
     private boolean isDirty;
 
     public OBB() {
@@ -75,7 +76,7 @@ public final class OBB implements ICollision {
     }
 
     @Override
-    public void preIsColliding(BoxPoseStack poseStack) {
+    public void prepareColliding(BoxPoseStack poseStack) {
         if (isDirty || poseStack.isDirty()) {
             update(poseStack);
             isDirty = false;
@@ -90,5 +91,10 @@ public final class OBB implements ICollision {
     @Override
     public ICollisionRender getRenderer() {
         return OBBRender.INSTANCE;
+    }
+
+    @Override
+    public boolean disable() {
+        return disable;
     }
 }

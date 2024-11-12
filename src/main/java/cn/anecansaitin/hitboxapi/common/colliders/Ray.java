@@ -12,6 +12,8 @@ public final class Ray implements ICollision{
     public final Vector3f globalDirection;
     public final float length; // 射线的长度
 
+    public boolean disable;
+
     public Ray(Vector3f origin, Vector3f direction, float length) {
         this.origin = origin;
         this.globalOrigin = new Vector3f(origin);
@@ -25,7 +27,7 @@ public final class Ray implements ICollision{
     }
 
     @Override
-    public void preIsColliding(BoxPoseStack poseStack) {
+    public void prepareColliding(BoxPoseStack poseStack) {
         if (!poseStack.isDirty()) {
             return;
         }
@@ -40,6 +42,11 @@ public final class Ray implements ICollision{
     @Override
     public Collision getType() {
         return Collision.RAY;
+    }
+
+    @Override
+    public boolean disable() {
+        return disable;
     }
 
     @Override

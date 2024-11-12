@@ -19,6 +19,7 @@ public final class Composite implements ICollision {
     public final Vector3f globalPosition;
     public final Quaternionf globalRotation;
 
+    public boolean disable;
     private boolean isDirty;
 
     @SuppressWarnings("unchecked")
@@ -30,12 +31,16 @@ public final class Composite implements ICollision {
         collisionList = collisions.toArray(new Pair[0]);
 
         for (Pair<String, ICollision> collision : collisionList) {
+            if (collision.right().getType() == Collision.AABB) {
+                throw new IllegalArgumentException("Composite cannot contain AABB collisions, because it can't rotate");
+            }
+
             collisionMap.put(collision.left(), new IntObjectImmutablePair<>(collisionList.length, collision.right()));
         }
     }
 
     @Override
-    public void preIsColliding(BoxPoseStack poseStack) {
+    public void prepareColliding(BoxPoseStack poseStack) {
         poseStack.push();
 
         if (isDirty || poseStack.isDirty()) {
@@ -52,7 +57,7 @@ public final class Composite implements ICollision {
         poseStack.setRotation(globalRotation);
 
         for (Pair<String, ICollision> collision : collisionList) {
-            collision.right().preIsColliding(poseStack);
+            collision.right().prepareColliding(poseStack);
         }
 
         poseStack.pop();
@@ -86,5 +91,10 @@ public final class Composite implements ICollision {
 
     public int getCollisionCount() {
         return collisionList.length;
+    }
+
+    @Override
+    public boolean disable() {
+        return disable;
     }
 }

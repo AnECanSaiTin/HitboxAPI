@@ -11,6 +11,8 @@ public final class Sphere implements ICollision {
     public float radius;
     public final Vector3f globalCenter;
 
+    public boolean disable;
+
     public Sphere(Vector3f center, float radius) {
         this.center = center;
         this.globalCenter = new Vector3f(center);
@@ -18,7 +20,7 @@ public final class Sphere implements ICollision {
     }
 
     @Override
-    public void preIsColliding(BoxPoseStack poseStack) {
+    public void prepareColliding(BoxPoseStack poseStack) {
         if (!poseStack.isDirty()) {
             return;
         }
@@ -37,5 +39,10 @@ public final class Sphere implements ICollision {
     @Override
     public ICollisionRender getRenderer() {
         return SphereRender.INSTANCE;
+    }
+
+    @Override
+    public boolean disable() {
+        return disable;
     }
 }

@@ -13,6 +13,7 @@ public final class Capsule implements ICollision {
     public float radius;
     public final Vector3f globalCenter;
 
+    public boolean disable;
     private boolean isDirty;
 
     public Capsule(Vector3f center, float radius, float height, Quaternionf rotation) {
@@ -26,7 +27,7 @@ public final class Capsule implements ICollision {
     }
 
     @Override
-    public void preIsColliding(BoxPoseStack poseStack) {
+    public void prepareColliding(BoxPoseStack poseStack) {
         if (isDirty || poseStack.isDirty()) {
             updateDirection(poseStack);
             isDirty = false;
@@ -56,5 +57,10 @@ public final class Capsule implements ICollision {
 
         direction.set(0, 1, 0);
         rotation.transform(direction);
+    }
+
+    @Override
+    public boolean disable() {
+        return disable;
     }
 }

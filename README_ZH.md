@@ -7,9 +7,10 @@
 - 球体（Sphere）
 - 胶囊体（Capsule）
 - 射线（Ray）
-- 复合碰撞箱（Compound）
+- 复合碰撞箱（Compound） 
   - 可将多个碰撞箱组合成一个
   - 可嵌套复合碰撞箱
+  - 不可组合AABB
 
 ### 如何使用
 

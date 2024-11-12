@@ -12,62 +12,62 @@ public final class CollisionUtil {
         if (other == collision) return true;
         if (collision.disable() || other.disable()) return false;
 
-        collision.preIsColliding(poseStack);
-        other.preIsColliding(otherPoseStack);
+        collision.prepareColliding(poseStack);
+        other.prepareColliding(otherPoseStack);
 
         switch (collision.getType()) {
             case OBB -> {
                 return switch (other.getType()) {
-                    case OBB -> CollisionUtil.isColliding((OBB) collision, (OBB) other);
-                    case SPHERE -> CollisionUtil.isColliding((Sphere) other, (OBB) collision);
-                    case CAPSULE -> CollisionUtil.isColliding((Capsule) other, (OBB) collision);
-                    case AABB -> CollisionUtil.isColliding((OBB) collision, new OBB((AABB) other));
-                    case RAY -> CollisionUtil.isColliding((Ray) other, (OBB) collision);
-                    case COMPOSITE -> CollisionUtil.isColliding((Composite) other, collision);
+                    case OBB -> isColliding((OBB) collision, (OBB) other);
+                    case SPHERE -> isColliding((Sphere) other, (OBB) collision);
+                    case CAPSULE -> isColliding((Capsule) other, (OBB) collision);
+                    case AABB -> isColliding((OBB) collision, new OBB((AABB) other));
+                    case RAY -> isColliding((Ray) other, (OBB) collision);
+                    case COMPOSITE -> isColliding((Composite) other, collision);
                 };
             }
             case SPHERE -> {
                 return switch (other.getType()) {
-                    case OBB -> CollisionUtil.isColliding((Sphere) collision, (OBB) other);
-                    case SPHERE -> CollisionUtil.isColliding((Sphere) collision, (Sphere) other);
-                    case CAPSULE -> CollisionUtil.isColliding((Capsule) other, (Sphere) collision);
-                    case AABB -> CollisionUtil.isColliding((Sphere) collision, (AABB) other);
-                    case RAY -> CollisionUtil.isColliding((Ray) other, (Sphere) collision);
-                    case COMPOSITE -> CollisionUtil.isColliding((Composite) other, collision);
+                    case OBB -> isColliding((Sphere) collision, (OBB) other);
+                    case SPHERE -> isColliding((Sphere) collision, (Sphere) other);
+                    case CAPSULE -> isColliding((Capsule) other, (Sphere) collision);
+                    case AABB -> isColliding((Sphere) collision, (AABB) other);
+                    case RAY -> isColliding((Ray) other, (Sphere) collision);
+                    case COMPOSITE -> isColliding((Composite) other, collision);
                 };
             }
             case CAPSULE -> {
                 return switch (other.getType()) {
-                    case OBB -> CollisionUtil.isColliding((Capsule) collision, (OBB) other);
-                    case SPHERE -> CollisionUtil.isColliding((Capsule) collision, (Sphere) other);
-                    case CAPSULE -> CollisionUtil.isColliding((Capsule) collision, (Capsule) other);
-                    case AABB -> CollisionUtil.isColliding((Capsule) collision, (AABB) other);
-                    case RAY -> CollisionUtil.isColliding((Ray) other, (Capsule) collision);
-                    case COMPOSITE -> CollisionUtil.isColliding((Composite) other, collision);
+                    case OBB -> isColliding((Capsule) collision, (OBB) other);
+                    case SPHERE -> isColliding((Capsule) collision, (Sphere) other);
+                    case CAPSULE -> isColliding((Capsule) collision, (Capsule) other);
+                    case AABB -> isColliding((Capsule) collision, (AABB) other);
+                    case RAY -> isColliding((Ray) other, (Capsule) collision);
+                    case COMPOSITE -> isColliding((Composite) other, collision);
                 };
             }
             case AABB -> {
                 return switch (other.getType()) {
-                    case OBB -> CollisionUtil.isColliding((OBB) other, new OBB((AABB) collision));
-                    case SPHERE -> CollisionUtil.isColliding((Sphere) other, (AABB) collision);
-                    case CAPSULE -> CollisionUtil.isColliding((Capsule) other, (AABB) collision);
-                    case AABB -> ((AABB) collision).intersects((AABB) other);
-                    case RAY -> CollisionUtil.isColliding((Ray) other, (AABB) collision);
-                    case COMPOSITE -> CollisionUtil.isColliding((Composite) other, collision);
+                    case OBB -> isColliding((OBB) other, new OBB((AABB) collision));
+                    case SPHERE -> isColliding((Sphere) other, (AABB) collision);
+                    case CAPSULE -> isColliding((Capsule) other, (AABB) collision);
+                    case AABB -> isColliding((AABB) collision, (AABB) other);
+                    case RAY -> isColliding((Ray) other, (AABB) collision);
+                    case COMPOSITE -> isColliding((Composite) other, collision);
                 };
             }
             case RAY -> {
                 return switch (other.getType()) {
-                    case OBB -> CollisionUtil.isColliding((Ray) collision, (OBB) other);
-                    case SPHERE -> CollisionUtil.isColliding((Ray) collision, (Sphere) other);
-                    case CAPSULE -> CollisionUtil.isColliding((Ray) collision, (Capsule) other);
-                    case AABB -> CollisionUtil.isColliding((Ray) collision, (AABB) other);
-                    case RAY -> CollisionUtil.isColliding((Ray) collision, (Ray) other);
-                    case COMPOSITE -> CollisionUtil.isColliding((Composite) other, collision);
+                    case OBB -> isColliding((Ray) collision, (OBB) other);
+                    case SPHERE -> isColliding((Ray) collision, (Sphere) other);
+                    case CAPSULE -> isColliding((Ray) collision, (Capsule) other);
+                    case AABB -> isColliding((Ray) collision, (AABB) other);
+                    case RAY -> isColliding((Ray) collision, (Ray) other);
+                    case COMPOSITE -> isColliding((Composite) other, collision);
                 };
             }
             case COMPOSITE -> {
-                return CollisionUtil.isColliding((Composite) collision, other);
+                return isColliding((Composite) collision, other);
             }
             default -> {
                 return false;
@@ -238,9 +238,10 @@ public final class CollisionUtil {
 
     private static Vector3f getClosestPointAABB(Vector3f point, AABB aabb) {
         Vector3f nearP = new Vector3f();
-        nearP.x = (float) Math.clamp(point.x, aabb.minX, aabb.maxX);
-        nearP.y = (float) Math.clamp(point.y, aabb.minY, aabb.maxY);
-        nearP.z = (float) Math.clamp(point.z, aabb.minZ, aabb.maxZ);
+        Vector3f offset = aabb.hitboxApi$getGlobalOffset();
+        nearP.x = (float) Math.clamp(point.x, aabb.minX + offset.x, aabb.maxX + offset.x);
+        nearP.y = (float) Math.clamp(point.y, aabb.minY + offset.y, aabb.maxY + offset.y);
+        nearP.z = (float) Math.clamp(point.z, aabb.minZ + offset.z, aabb.maxZ + offset.z);
         return nearP;
     }
 
@@ -387,7 +388,8 @@ public final class CollisionUtil {
         Vector3f pointA1 = capsule.direction.mul(height, new Vector3f()).add(capsule.globalCenter);
         Vector3f pointA2 = capsule.direction.mul(-height, new Vector3f()).add(capsule.globalCenter);
 
-        Vector3f closest1 = getClosestPointOnSegment(pointA1, pointA2, aabb.getCenter().toVector3f());
+        Vector3f offset = aabb.hitboxApi$getGlobalOffset();
+        Vector3f closest1 = getClosestPointOnSegment(pointA1, pointA2, aabb.getCenter().toVector3f().add(offset));
         Vector3f closest2 = getClosestPointAABB(closest1, aabb);
 
         //求胶囊体半径平方
@@ -407,7 +409,8 @@ public final class CollisionUtil {
      * @return 有碰撞返回true
      */
     public static boolean isColliding(Ray ray, AABB aabb) {
-        return Intersectionf.testRayAab(ray.globalOrigin, ray.globalDirection, new Vector3f((float) aabb.minX, (float) aabb.minY, (float) aabb.minZ), new Vector3f((float) aabb.maxX, (float) aabb.maxY, (float) aabb.maxZ));
+        Vector3f offset = aabb.hitboxApi$getGlobalOffset();
+        return Intersectionf.testRayAab(ray.globalOrigin, ray.globalDirection, new Vector3f((float) aabb.minX, (float) aabb.minY, (float) aabb.minZ).add(offset), new Vector3f((float) aabb.maxX, (float) aabb.maxY, (float) aabb.maxZ).add(offset));
     }
 
     /**
@@ -534,13 +537,28 @@ public final class CollisionUtil {
         int count = composite.getCollisionCount();
 
         for (int i = 0; i < count; i++) {
-            boolean colliding = other.isColliding(composite.getCollision(i));
-
-            if (colliding) {
+            if (other.isColliding(composite.getCollision(i))) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * 判断两个AABB盒是否碰撞
+     *
+     * @param aabb  AABB盒
+     * @param other AABB盒
+     * @return 有碰撞返回true
+     */
+    public static boolean isColliding(AABB aabb, AABB other) {
+        Vector3f aOffset = aabb.hitboxApi$getGlobalOffset();
+        Vector3f bOffset = other.hitboxApi$getGlobalOffset();
+        return Intersectionf.testAabAab(
+                (float) (aabb.minX + aOffset.x), (float) (aabb.minY + aOffset.y), (float) (aabb.minZ + aOffset.z),
+                (float) (aabb.maxX + aOffset.x), (float) (aabb.maxY + aOffset.y), (float) (aabb.maxZ + aOffset.z),
+                (float) (other.minX + bOffset.x), (float) (other.minY + bOffset.y), (float) (other.minZ + bOffset.z),
+                (float) (other.maxX + bOffset.x), (float) (other.maxY + bOffset.y), (float) (other.maxZ + bOffset.z));
     }
 }

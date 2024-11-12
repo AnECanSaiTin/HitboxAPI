@@ -2,8 +2,13 @@ package cn.anecansaitin.hitboxapi.common.colliders;
 
 import cn.anecansaitin.hitboxapi.client.colliders.render.AABBRender;
 import cn.anecansaitin.hitboxapi.client.colliders.render.ICollisionRender;
+import org.joml.Vector3f;
 
 public interface IAABBCollision extends ICollision {
+    default Vector3f hitboxApi$getGlobalOffset() {
+        return null;
+    }
+
     @Override
     default ICollisionRender getRenderer() {
         return AABBRender.INSTANCE;
@@ -15,6 +20,19 @@ public interface IAABBCollision extends ICollision {
     }
 
     @Override
-    default void preIsColliding(BoxPoseStack poseStack) {
+    default void prepareColliding(BoxPoseStack poseStack) {
+        hitboxApi$preIsColliding(poseStack);
+    }
+
+    @Override
+    default boolean disable() {
+        return false;
+    }
+
+    default boolean hitboxApi$disable() {
+        return disable();
+    }
+
+    default void hitboxApi$preIsColliding(BoxPoseStack poseStack) {
     }
 }

@@ -11,13 +11,11 @@ public interface ICollision {
         return CollisionUtil.isColliding(this, other);
     }
 
-    void preIsColliding(BoxPoseStack poseStack);
+    void prepareColliding(BoxPoseStack poseStack);
 
     Collision getType();
 
     ICollisionRender getRenderer();
 
-    default boolean disable() {
-        return false;
-    }
+    boolean disable();
 }

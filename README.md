@@ -10,6 +10,7 @@
 - Compound
   - Multiple collision boxes can be combined into one.
   - Composite collision boxes can be nested.
+  - Not support AABB collision.
 
 ### How to Use
 
