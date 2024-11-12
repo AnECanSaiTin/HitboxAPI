@@ -5,7 +5,7 @@ import cn.anecansaitin.hitboxapi.client.colliders.render.RayRender;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public final class Ray implements ICollision{
+public final class Ray implements ICollider {
     public final Vector3f origin; // 射线的起点
     public final Vector3f globalOrigin; // 射线的起点
     public final Vector3f direction;

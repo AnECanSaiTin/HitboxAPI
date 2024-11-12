@@ -4,10 +4,40 @@ import net.minecraft.world.phys.AABB;
 import org.joml.Intersectionf;
 import org.joml.Vector3f;
 
-public final class CollisionUtil {
+public final class ColliderUtil {
     private static final BoxPoseStack EMPTY_POSE_STACK = new BoxPoseStack();
 
-    public static boolean isColliding(ICollision collision, BoxPoseStack poseStack, ICollision other, BoxPoseStack otherPoseStack) {
+    /**
+     * 判断两个碰撞箱是否相交<br/>
+     * <br/>
+     * 适用于碰撞箱处于不同的坐标系中，例如A、B实体存在以实体自身为中心的碰撞箱，此时需要使用坐标变换栈将碰撞箱转换为世界坐标。
+     *
+     * <pre>{@code
+     *      Entity A = ...;
+     *      Entity B = ...;
+     *
+     *      //假设有数据附加能获取碰撞箱
+     *      ICollider colliderA = A.getData(...);
+     *      ICollider colliderB = B.getData(...);
+     *
+     *      //够造从实体局部坐标到世界坐标的坐标变换栈
+     *      BoxPoseStack poseStackA = new BoxPoseStack();
+     *      //将实体坐标存入栈
+     *      poseStackA.setPosition(A.position().toVector3f());
+     *      BoxPoseStack poseStackB = new BoxPoseStack();
+     *      poseStackB.setPosition(B.position().toVector3f());
+     *
+     *      //判断碰撞箱是否相交
+     *      boolean result = ColliderUtil.isColliding(colliderA, poseStackA, colliderB, poseStackB);
+     *  }</pre>
+     *
+     * @param collision 任意碰撞箱
+     * @param poseStack 碰撞箱坐标变换栈
+     * @param other 另一个碰撞箱
+     * @param otherPoseStack 另一个碰撞箱坐标变换栈
+     * @return 相交返回true
+     */
+    public static boolean isColliding(ICollider collision, BoxPoseStack poseStack, ICollider other, BoxPoseStack otherPoseStack) {
         if (other == null) return false;
         if (other == collision) return true;
         if (collision.disable() || other.disable()) return false;
@@ -75,7 +105,25 @@ public final class CollisionUtil {
         }
     }
 
-    public static boolean isColliding(ICollision collision, ICollision other) {
+    /**
+     * 判断两个碰撞箱是否相交<br/>
+     * <br/>
+     * 适用于碰撞箱处于同一坐标系中，例如A、B实体存在以世界坐标为中心的碰撞箱，此时无需使用坐标变换栈。
+     *
+     * <pre>{@code
+     *      Entity A = ...;
+     *      Entity B = ...;
+     *
+     *      //假设有数据附加能获取碰撞箱
+     *      ICollider colliderA = A.getData(...);
+     *      ICollider colliderB = B.getData(...);
+     *      boolean result = ColliderUtil.isColliding(colliderA, colliderB);
+     * }</pre>
+     * @param collision 任意碰撞箱
+     * @param other 另一个碰撞箱
+     * @return 相交返回true
+     */
+    public static boolean isColliding(ICollider collision, ICollider other) {
         return isColliding(collision, EMPTY_POSE_STACK, other, EMPTY_POSE_STACK);
     }
 
@@ -284,7 +332,7 @@ public final class CollisionUtil {
         Vector3f point1 = capsule.direction.mul(height, new Vector3f()).add(capsule.globalCenter);
         Vector3f point2 = capsule.direction.mul(-height, new Vector3f()).add(capsule.globalCenter);
 
-        Vector3f closest = CollisionUtil.getClosestPointOnSegment(point1, point2, sphere.globalCenter);
+        Vector3f closest = ColliderUtil.getClosestPointOnSegment(point1, point2, sphere.globalCenter);
 
         //求两个球半径和
         float totalRadius = (float) Math.pow(capsule.radius + sphere.radius, 2);
@@ -533,7 +581,7 @@ public final class CollisionUtil {
      * @param other     其他碰撞体
      * @return 有碰撞返回true
      */
-    public static boolean isColliding(Composite composite, ICollision other) {
+    public static boolean isColliding(Composite composite, ICollider other) {
         int count = composite.getCollisionCount();
 
         for (int i = 0; i < count; i++) {

@@ -6,7 +6,7 @@ import net.minecraft.world.phys.AABB;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public final class OBB implements ICollision {
+public final class OBB implements ICollider {
     public final Vector3f[] vertices = new Vector3f[8];
     public final Vector3f[] axes = new Vector3f[3];
     public final Vector3f center;

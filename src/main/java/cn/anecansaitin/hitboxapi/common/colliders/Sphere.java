@@ -5,7 +5,7 @@ import cn.anecansaitin.hitboxapi.client.colliders.render.SphereRender;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public final class Sphere implements ICollision {
+public final class Sphere implements ICollider {
     public static final Sphere EMPTY = new Sphere(new Vector3f(), 0);
     public final Vector3f center;
     public float radius;

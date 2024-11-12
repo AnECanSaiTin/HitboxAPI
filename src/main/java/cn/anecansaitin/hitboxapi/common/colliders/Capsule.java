@@ -5,7 +5,7 @@ import cn.anecansaitin.hitboxapi.client.colliders.render.ICollisionRender;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public final class Capsule implements ICollision {
+public final class Capsule implements ICollider {
     public final Vector3f center;
     public final Quaternionf rotation;
     public final Vector3f direction;

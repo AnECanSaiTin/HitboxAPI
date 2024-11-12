@@ -1,14 +1,11 @@
 package cn.anecansaitin.hitboxapi.common.listener;
 
-import cn.anecansaitin.hitboxapi.HitboxApi;
-import cn.anecansaitin.hitboxapi.common.CollisionHolder;
+import cn.anecansaitin.hitboxapi.common.ColliderHolder;
 import cn.anecansaitin.hitboxapi.common.HitboxDataAttachments;
-import cn.anecansaitin.hitboxapi.common.colliders.ICollision;
+import cn.anecansaitin.hitboxapi.common.colliders.ICollider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 import java.util.List;
@@ -20,27 +17,27 @@ public class EntityTick {
 //    @SubscribeEvent
     public static void onEntityTick(EntityTickEvent.Post event) {
         Entity entity = event.getEntity();
-        Optional<CollisionHolder> data = entity.getExistingData(HitboxDataAttachments.COLLISION);
+        Optional<ColliderHolder> data = entity.getExistingData(HitboxDataAttachments.COLLISION);
 
         if (data.isEmpty()) return;
 
-        CollisionHolder collisionHolder = data.get();
-        Map<String, ICollision> hitBox = collisionHolder.hitBox;
+        ColliderHolder colliderHolder = data.get();
+        Map<String, ICollider> hitBox = colliderHolder.hitBox;
 
         if (hitBox.isEmpty()) return;
 
         List<Entity> entities = entity.level().getEntities(entity, entity.getBoundingBox().inflate(5));
 
-        for (ICollision collision : hitBox.values()) {
+        for (ICollider collision : hitBox.values()) {
             for (int i = 0, entitiesSize = entities.size(); i < entitiesSize; i++) {
                 Entity enemy = entities.get(i);
-                Optional<CollisionHolder> enemyData = enemy.getExistingData(HitboxDataAttachments.COLLISION);
+                Optional<ColliderHolder> enemyData = enemy.getExistingData(HitboxDataAttachments.COLLISION);
 
                 if (enemyData.isEmpty()) continue;
 
                 entities.remove(i);
 
-                for (ICollision hurtBox : enemyData.get().hurtBox.values()) {
+                for (ICollider hurtBox : enemyData.get().hurtBox.values()) {
                     if (!collision.isColliding(hurtBox)) continue;
 
                     if (entity instanceof Player player) {

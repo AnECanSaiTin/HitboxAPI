@@ -1,6 +1,6 @@
 package cn.anecansaitin.hitboxapi.client.colliders.render;
 
-import cn.anecansaitin.hitboxapi.common.colliders.ICollision;
+import cn.anecansaitin.hitboxapi.common.colliders.ICollider;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -11,7 +11,7 @@ public class AABBRender implements ICollisionRender {
     public static final AABBRender INSTANCE = new AABBRender();
 
     @Override
-    public void render(ICollision collision, PoseStack poseStack, VertexConsumer buffer, Entity entity, float red, float green, float blue, float alpha) {
+    public void render(ICollider collision, PoseStack poseStack, VertexConsumer buffer, Entity entity, float red, float green, float blue, float alpha) {
         AABB aabb = (AABB) collision;
         LevelRenderer.renderLineBox(poseStack, buffer, aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ, red, green, blue, alpha);
     }

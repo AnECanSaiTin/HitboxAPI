@@ -4,7 +4,7 @@ import cn.anecansaitin.hitboxapi.client.colliders.render.AABBRender;
 import cn.anecansaitin.hitboxapi.client.colliders.render.ICollisionRender;
 import org.joml.Vector3f;
 
-public interface IAABBCollision extends ICollision {
+public interface IAABBCollider extends ICollider {
     default Vector3f hitboxApi$getGlobalOffset() {
         return null;
     }

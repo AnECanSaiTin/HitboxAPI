@@ -1,7 +1,7 @@
 package cn.anecansaitin.hitboxapi.mixin.common;
 
 import cn.anecansaitin.hitboxapi.common.colliders.BoxPoseStack;
-import cn.anecansaitin.hitboxapi.common.colliders.IAABBCollision;
+import cn.anecansaitin.hitboxapi.common.colliders.IAABBCollider;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(AABB.class)
-public abstract class AABBMixin implements IAABBCollision {
+public abstract class AABBMixin implements IAABBCollider {
     @Shadow public abstract Vec3 getCenter();
 
     @Unique

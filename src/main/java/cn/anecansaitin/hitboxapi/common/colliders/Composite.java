@@ -11,11 +11,11 @@ import org.joml.Vector3f;
 import java.util.HashMap;
 import java.util.List;
 
-public final class Composite implements ICollision {
+public final class Composite implements ICollider {
     public final Vector3f position;
     public final Quaternionf rotation;
-    private final HashMap<String, IntObjectPair<ICollision>> collisionMap = new HashMap<>();
-    private final Pair<String, ICollision>[] collisionList;
+    private final HashMap<String, IntObjectPair<ICollider>> collisionMap = new HashMap<>();
+    private final Pair<String, ICollider>[] collisionList;
     public final Vector3f globalPosition;
     public final Quaternionf globalRotation;
 
@@ -23,14 +23,14 @@ public final class Composite implements ICollision {
     private boolean isDirty;
 
     @SuppressWarnings("unchecked")
-    public Composite(Vector3f position, Quaternionf rotation, List<Pair<String, ICollision>> collisions) {
+    public Composite(Vector3f position, Quaternionf rotation, List<Pair<String, ICollider>> collisions) {
         this.position = position;
         this.globalPosition = new Vector3f(position);
         this.rotation = rotation;
         this.globalRotation = new Quaternionf(rotation);
         collisionList = collisions.toArray(new Pair[0]);
 
-        for (Pair<String, ICollision> collision : collisionList) {
+        for (Pair<String, ICollider> collision : collisionList) {
             if (collision.right().getType() == Collision.AABB) {
                 throw new IllegalArgumentException("Composite cannot contain AABB collisions, because it can't rotate");
             }
@@ -56,7 +56,7 @@ public final class Composite implements ICollision {
         poseStack.setPosition(globalPosition);
         poseStack.setRotation(globalRotation);
 
-        for (Pair<String, ICollision> collision : collisionList) {
+        for (Pair<String, ICollider> collision : collisionList) {
             collision.right().prepareColliding(poseStack);
         }
 
@@ -77,11 +77,11 @@ public final class Composite implements ICollision {
         return CompositeRender.INSTANCE;
     }
 
-    public ICollision getCollision(String name) {
+    public ICollider getCollision(String name) {
         return collisionMap.get(name).right();
     }
 
-    public ICollision getCollision(int index) {
+    public ICollider getCollision(int index) {
         return collisionList[index].right();
     }
 

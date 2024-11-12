@@ -1,6 +1,6 @@
 package cn.anecansaitin.hitboxapi.client.colliders.render;
 
-import cn.anecansaitin.hitboxapi.common.colliders.ICollision;
+import cn.anecansaitin.hitboxapi.common.colliders.ICollider;
 import cn.anecansaitin.hitboxapi.common.colliders.OBB;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -12,7 +12,7 @@ public final class OBBRender implements ICollisionRender {
     public static final OBBRender INSTANCE = new OBBRender();
 
     @Override
-    public void render(ICollision collision, PoseStack poseStack, VertexConsumer buffer, Entity entity, float red, float green, float blue, float alpha) {
+    public void render(ICollider collision, PoseStack poseStack, VertexConsumer buffer, Entity entity, float red, float green, float blue, float alpha) {
         OBB obb = (OBB) collision;
         Vector3f center = obb.center;
         Vector3f halfExtents = obb.halfExtents;

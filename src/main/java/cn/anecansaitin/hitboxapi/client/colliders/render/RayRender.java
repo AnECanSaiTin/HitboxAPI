@@ -1,6 +1,6 @@
 package cn.anecansaitin.hitboxapi.client.colliders.render;
 
-import cn.anecansaitin.hitboxapi.common.colliders.ICollision;
+import cn.anecansaitin.hitboxapi.common.colliders.ICollider;
 import cn.anecansaitin.hitboxapi.common.colliders.Ray;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -11,7 +11,7 @@ public class RayRender implements ICollisionRender {
     public static final RayRender INSTANCE = new RayRender();
 
     @Override
-    public void render(ICollision collision, PoseStack poseStack, VertexConsumer buffer, Entity entity, float red, float green, float blue, float alpha) {
+    public void render(ICollider collision, PoseStack poseStack, VertexConsumer buffer, Entity entity, float red, float green, float blue, float alpha) {
         Ray ray = (Ray) collision;
         PoseStack.Pose pose = poseStack.last();
         Vector3f origin = ray.origin;
