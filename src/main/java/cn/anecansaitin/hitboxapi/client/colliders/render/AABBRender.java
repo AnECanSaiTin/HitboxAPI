@@ -7,7 +7,7 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 
-public class AABBRender implements IColliderRender{
+public class AABBRender implements ICollisionRender {
     public static final AABBRender INSTANCE = new AABBRender();
 
     @Override

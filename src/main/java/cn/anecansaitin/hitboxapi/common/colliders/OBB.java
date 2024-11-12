@@ -1,6 +1,6 @@
 package cn.anecansaitin.hitboxapi.common.colliders;
 
-import cn.anecansaitin.hitboxapi.client.colliders.render.IColliderRender;
+import cn.anecansaitin.hitboxapi.client.colliders.render.ICollisionRender;
 import cn.anecansaitin.hitboxapi.client.colliders.render.OBBRender;
 import net.minecraft.world.phys.AABB;
 import org.joml.Quaternionf;
@@ -12,8 +12,9 @@ public final class OBB implements ICollision {
     public final Vector3f center;
     public final Vector3f halfExtents;
     public final Quaternionf rotation;
+    public final Vector3f globalCenter;
 
-    private boolean needUpdate;
+    private boolean isDirty;
 
     public OBB() {
         this(new Vector3f(), new Vector3f(1, 1, 1), new Quaternionf());
@@ -29,20 +30,28 @@ public final class OBB implements ICollision {
         }
 
         this.center = center;
+        this.globalCenter = new Vector3f(center);
         this.halfExtents = halfExtents;
         this.rotation = rotation;
-        needUpdate = true;
+        isDirty = true;
     }
 
     public OBB(AABB aabb) {
         this(aabb.getCenter().toVector3f(), new Vector3f((float) aabb.getXsize(), (float) aabb.getYsize(), (float) aabb.getZsize()).mul(0.5f), new Quaternionf());
     }
 
-    private void update() {
+    private void update(BoxPoseStack poseStack) {
+        BoxPoseStack.Pose pose = poseStack.last();
+        Vector3f posOffset = pose.position;
+        Quaternionf rotOffset = pose.rotation;
+        Vector3f center = rotOffset.transform(this.center, globalCenter).add(posOffset);
+        Quaternionf rotation = rotOffset.mul(this.rotation, new Quaternionf());
+
         // 旋转轴向
         axes[0].set(1, 0, 0);
         axes[1].set(0, 1, 0);
         axes[2].set(0, 0, 1);
+
 
         for (Vector3f axe : axes) {
             rotation.transform(axe);
@@ -62,13 +71,14 @@ public final class OBB implements ICollision {
     }
 
     public void markUpdate() {
-        needUpdate = true;
+        isDirty = true;
     }
 
     @Override
-    public void preIsColliding() {
-        if (needUpdate) {
-            update();
+    public void preIsColliding(BoxPoseStack poseStack) {
+        if (isDirty || poseStack.isDirty()) {
+            update(poseStack);
+            isDirty = false;
         }
     }
 
@@ -78,7 +88,7 @@ public final class OBB implements ICollision {
     }
 
     @Override
-    public IColliderRender getRenderer() {
+    public ICollisionRender getRenderer() {
         return OBBRender.INSTANCE;
     }
 }

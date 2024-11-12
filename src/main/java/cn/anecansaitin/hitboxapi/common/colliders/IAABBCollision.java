@@ -1,11 +1,11 @@
 package cn.anecansaitin.hitboxapi.common.colliders;
 
 import cn.anecansaitin.hitboxapi.client.colliders.render.AABBRender;
-import cn.anecansaitin.hitboxapi.client.colliders.render.IColliderRender;
+import cn.anecansaitin.hitboxapi.client.colliders.render.ICollisionRender;
 
 public interface IAABBCollision extends ICollision {
     @Override
-    default IColliderRender getRenderer() {
+    default ICollisionRender getRenderer() {
         return AABBRender.INSTANCE;
     }
 
@@ -15,11 +15,6 @@ public interface IAABBCollision extends ICollision {
     }
 
     @Override
-    default void preIsColliding() {
-    }
-
-    @Override
-    default boolean isColliding(ICollision other) {
-        return ICollision.super.isColliding(other);
+    default void preIsColliding(BoxPoseStack poseStack) {
     }
 }

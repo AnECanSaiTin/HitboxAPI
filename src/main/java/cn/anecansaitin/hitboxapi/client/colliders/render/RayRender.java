@@ -7,7 +7,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.world.entity.Entity;
 import org.joml.Vector3f;
 
-public class RayRender implements IColliderRender{
+public class RayRender implements ICollisionRender {
     public static final RayRender INSTANCE = new RayRender();
 
     @Override

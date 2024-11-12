@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.world.entity.Entity;
 import org.joml.Vector3f;
 
-public final class OBBRender implements IColliderRender{
+public final class OBBRender implements ICollisionRender {
     public static final OBBRender INSTANCE = new OBBRender();
 
     @Override

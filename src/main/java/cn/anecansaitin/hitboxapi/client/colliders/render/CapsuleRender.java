@@ -10,7 +10,7 @@ import org.joml.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CapsuleRender implements IColliderRender {
+public class CapsuleRender implements ICollisionRender {
     public static final CapsuleRender INSTANCE = new CapsuleRender();
     private final float[][][] verticesCache = {
             generateHalfSphere(1, 10, 20, true),

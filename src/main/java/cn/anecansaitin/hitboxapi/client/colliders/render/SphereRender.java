@@ -9,7 +9,7 @@ import net.minecraft.world.entity.Entity;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SphereRender implements IColliderRender {
+public class SphereRender implements ICollisionRender {
     public static final SphereRender INSTANCE = new SphereRender();
     private final float[][] cachedVertices = generateSphereWireframe(1, 21, 21);
 

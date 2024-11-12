@@ -1,21 +1,32 @@
 package cn.anecansaitin.hitboxapi.common.colliders;
 
-import cn.anecansaitin.hitboxapi.client.colliders.render.IColliderRender;
+import cn.anecansaitin.hitboxapi.client.colliders.render.ICollisionRender;
 import cn.anecansaitin.hitboxapi.client.colliders.render.SphereRender;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public final class Sphere implements ICollision {
     public static final Sphere EMPTY = new Sphere(new Vector3f(), 0);
     public final Vector3f center;
     public float radius;
+    public final Vector3f globalCenter;
 
     public Sphere(Vector3f center, float radius) {
         this.center = center;
+        this.globalCenter = new Vector3f(center);
         this.radius = radius;
     }
 
     @Override
-    public void preIsColliding() {
+    public void preIsColliding(BoxPoseStack poseStack) {
+        if (!poseStack.isDirty()) {
+            return;
+        }
+
+        BoxPoseStack.Pose pose = poseStack.last();
+        Vector3f posOffset = pose.position;
+        Quaternionf rotOffset = pose.rotation;
+        rotOffset.transform(this.center, globalCenter).add(posOffset);
     }
 
     @Override
@@ -24,7 +35,7 @@ public final class Sphere implements ICollision {
     }
 
     @Override
-    public IColliderRender getRenderer() {
+    public ICollisionRender getRenderer() {
         return SphereRender.INSTANCE;
     }
 }

@@ -5,5 +5,6 @@ public enum Collision {
     SPHERE,
     CAPSULE,
     AABB,
-    RAY
+    RAY,
+    COMPOSITE
 }
