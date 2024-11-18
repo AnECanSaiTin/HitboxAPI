@@ -1,7 +1,5 @@
-package cn.anecansaitin.hitboxapi.common.colliders;
+package cn.anecansaitin.hitboxapi.common.collider;
 
-import cn.anecansaitin.hitboxapi.client.colliders.render.CompositeRender;
-import cn.anecansaitin.hitboxapi.client.colliders.render.ICollisionRender;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.ints.IntObjectImmutablePair;
 import it.unimi.dsi.fastutil.ints.IntObjectPair;
@@ -11,11 +9,12 @@ import org.joml.Vector3f;
 import java.util.HashMap;
 import java.util.List;
 
-public final class Composite implements ICollider {
+public class Composite<T, D> implements IComposite<T, D> {
     public final Vector3f position;
     public final Quaternionf rotation;
-    private final HashMap<String, IntObjectPair<ICollider>> collisionMap = new HashMap<>();
-    private final Pair<String, ICollider>[] collisionList;
+    public final HashMap<String, IntObjectPair<ICollider<T, D>>> collisionMap = new HashMap<>();
+    public final ICollider<T, D>[] colliders;
+    public final String[] colliderNames;
     public final Vector3f globalPosition;
     public final Quaternionf globalRotation;
 
@@ -23,19 +22,19 @@ public final class Composite implements ICollider {
     private boolean isDirty;
 
     @SuppressWarnings("unchecked")
-    public Composite(Vector3f position, Quaternionf rotation, List<Pair<String, ICollider>> collisions) {
+    public Composite(Vector3f position, Quaternionf rotation, List<Pair<String, ICollider<T, D>>> collisions) {
         this.position = position;
         this.globalPosition = new Vector3f(position);
         this.rotation = rotation;
         this.globalRotation = new Quaternionf(rotation);
-        collisionList = collisions.toArray(new Pair[0]);
+        this.colliders = new ICollider[collisions.size()];
+        this.colliderNames = new String[collisions.size()];
 
-        for (Pair<String, ICollider> collision : collisionList) {
-            if (collision.right().getType() == Collision.AABB) {
-                throw new IllegalArgumentException("Composite cannot contain AABB collisions, because it can't rotate");
-            }
-
-            collisionMap.put(collision.left(), new IntObjectImmutablePair<>(collisionList.length, collision.right()));
+        for (int i = 0, collisionsSize = collisions.size(); i < collisionsSize; i++) {
+            Pair<String, ICollider<T, D>> pair = collisions.get(i);
+            this.colliderNames[i] = pair.left();
+            this.colliders[i] = pair.right();
+            collisionMap.put(pair.left(), new IntObjectImmutablePair<>(i, pair.right()));
         }
     }
 
@@ -56,8 +55,8 @@ public final class Composite implements ICollider {
         poseStack.setPosition(globalPosition);
         poseStack.setRotation(globalRotation);
 
-        for (Pair<String, ICollider> collision : collisionList) {
-            collision.right().prepareColliding(poseStack);
+        for (ICollider<T, D> collider : colliders) {
+            collider.prepareColliding(poseStack);
         }
 
         poseStack.pop();
@@ -68,33 +67,50 @@ public final class Composite implements ICollider {
     }
 
     @Override
-    public Collision getType() {
-        return Collision.COMPOSITE;
+    public void setDisable(boolean disable) {
+        this.disable = disable;
     }
 
-    @Override
-    public ICollisionRender getRenderer() {
-        return CompositeRender.INSTANCE;
-    }
-
-    public ICollider getCollision(String name) {
+    public ICollider<T, D> getCollider(String name) {
         return collisionMap.get(name).right();
     }
 
-    public ICollider getCollision(int index) {
-        return collisionList[index].right();
+    @Override
+    public ICollider<T, D> getCollider(int index) {
+        return colliders[index];
     }
 
     public int getCollisionIndex(String name) {
         return collisionMap.get(name).firstInt();
     }
 
-    public int getCollisionCount() {
-        return collisionList.length;
+    @Override
+    public int getCollidersCount() {
+        return colliders.length;
     }
 
     @Override
     public boolean disable() {
         return disable;
+    }
+
+    @Override
+    public Vector3f getLocalPosition() {
+        return position;
+    }
+
+    @Override
+    public Quaternionf getLocalRotation() {
+        return rotation;
+    }
+
+    @Override
+    public Vector3f getGlobalPosition() {
+        return globalPosition;
+    }
+
+    @Override
+    public Quaternionf getGlobalRotation() {
+        return globalRotation;
     }
 }

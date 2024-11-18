@@ -1,9 +1,9 @@
 package cn.anecansaitin.hitboxapi.mixin.client;
 
 import cn.anecansaitin.hitboxapi.client.colliders.render.ICollisionRender;
-import cn.anecansaitin.hitboxapi.common.ColliderHolder;
 import cn.anecansaitin.hitboxapi.common.HitboxDataAttachments;
-import cn.anecansaitin.hitboxapi.common.colliders.ICollider;
+import cn.anecansaitin.hitboxapi.common.attachment.IEntityColliderHolder;
+import cn.anecansaitin.hitboxapi.common.collider.ICollider;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
@@ -20,27 +20,29 @@ import java.util.Optional;
 public abstract class EntityRenderDispatcherMixin {
     @Inject(method = "renderHitbox", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;renderVector(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;Lorg/joml/Vector3f;Lnet/minecraft/world/phys/Vec3;I)V"))
     private static void hitboxApi$renderColliders(PoseStack poseStack, VertexConsumer buffer, Entity entity, float red, float green, float blue, float alpha, CallbackInfo ci) {
-        Optional<ColliderHolder> data = entity.getExistingData(HitboxDataAttachments.COLLISION);
+        Optional<IEntityColliderHolder> data = entity.getExistingData(HitboxDataAttachments.COLLISION);
 
         if (data.isEmpty()) return;
 
-        ColliderHolder holder = data.get();
+        IEntityColliderHolder holder = data.get();
 
-        for (ICollider collision : holder.hurtBox.values()) {
-            hitboxApi$renderCollider(collision, poseStack, buffer, entity, 0, 1, 0, alpha);
+        for (ICollider<Entity, Void> collision : holder.getHurtBox().values()) {
+            hitboxApi$renderCollider(collision, poseStack, buffer, 0, 1, 0, alpha);
         }
 
-        for (ICollider collision : holder.hitBox.values()) {
-            hitboxApi$renderCollider(collision, poseStack, buffer, entity, 1, 0, 0, alpha);
+        for (ICollider<Entity, Void> collision : holder.getHitBox().values()) {
+            hitboxApi$renderCollider(collision, poseStack, buffer, 1, 0, 0, alpha);
         }
     }
 
     @Unique
-    private static void hitboxApi$renderCollider(ICollider collision, PoseStack poseStack, VertexConsumer buffer, Entity entity, float red, float green, float blue, float alpha) {
+    private static void hitboxApi$renderCollider(ICollider<Entity, Void> collision, PoseStack poseStack, VertexConsumer buffer, float red, float green, float blue, float alpha) {
+        if (collision.disable()) return;
+
         ICollisionRender renderer = collision.getRenderer();
 
         if (renderer == null) return;
 
-        renderer.render(collision, poseStack, buffer, entity, red, green, blue, alpha);
+        renderer.render(collision, poseStack, buffer, red, green, blue, alpha);
     }
 }

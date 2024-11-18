@@ -1,10 +1,9 @@
 package cn.anecansaitin.hitboxapi.client.colliders.render;
 
-import cn.anecansaitin.hitboxapi.common.colliders.Capsule;
-import cn.anecansaitin.hitboxapi.common.colliders.ICollider;
+import cn.anecansaitin.hitboxapi.common.collider.ICapsule;
+import cn.anecansaitin.hitboxapi.common.collider.ICollider;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.world.entity.Entity;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -22,16 +21,16 @@ public class CapsuleRender implements ICollisionRender {
     }
 
     @Override
-    public void render(ICollider collision, PoseStack poseStack, VertexConsumer buffer, Entity entity, float red, float green, float blue, float alpha) {
-        Capsule capsule = (Capsule) collision;
+    public void render(ICollider<?, ?> collision, PoseStack poseStack, VertexConsumer buffer, float red, float green, float blue, float alpha) {
+        ICapsule<?, ?> capsule = (ICapsule<?, ?>) collision;
         poseStack.pushPose();
-        Vector3f center = capsule.center;
+        Vector3f center = capsule.getLocalCenter();
         poseStack.translate(center.x, center.y, center.z);
-        poseStack.mulPose(capsule.rotation);
+        poseStack.mulPose(capsule.getLocalRotation());
         PoseStack.Pose pose = poseStack.last();
-        float radius = capsule.radius;
-        float height = capsule.height;
-        float yOffset = capsule.height / 2;
+        float radius = capsule.getRadius();
+        float height = capsule.getHeight();
+        float yOffset = height / 2;
 
         //球
         for (int i = 0; i < 2; i++) {

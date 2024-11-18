@@ -10,7 +10,7 @@
 - Compound
   - Multiple collision boxes can be combined into one.
   - Composite collision boxes can be nested.
-  - Not support AABB collision.
+  - Composable AABB, collision detection works normally, but rendering is incorrect.
 
 ### How to Use
 
@@ -22,10 +22,6 @@ Create a new collision box object wherever collision detection is needed, and de
 For entities (Entity), you can cache the collision box by attaching **HitboxDataAttachments#COLLISION**. The cached collision box can be rendered by pressing **F3 + B**. Note that this Data does not have a synchronization implementation yet.
 
 For all collision boxes that require rotation, the corresponding mark method must be called after any rotation to prevent the collision detection from failing.
-
-### Modifications to Vanilla
-
-To facilitate compatibility with vanilla, the AABB collision box has implemented the ICollision interface and can be used like other collision boxes.
 
 ### Performance
 

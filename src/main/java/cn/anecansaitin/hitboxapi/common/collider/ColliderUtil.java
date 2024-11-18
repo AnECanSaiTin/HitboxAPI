@@ -1,6 +1,5 @@
-package cn.anecansaitin.hitboxapi.common.colliders;
+package cn.anecansaitin.hitboxapi.common.collider;
 
-import net.minecraft.world.phys.AABB;
 import org.joml.Intersectionf;
 import org.joml.Vector3f;
 
@@ -31,16 +30,16 @@ public final class ColliderUtil {
      *      boolean result = ColliderUtil.isColliding(colliderA, poseStackA, colliderB, poseStackB);
      *  }</pre>
      *
-     * @param collision 任意碰撞箱
-     * @param poseStack 碰撞箱坐标变换栈
-     * @param other 另一个碰撞箱
+     * @param collision      任意碰撞箱
+     * @param poseStack      碰撞箱坐标变换栈
+     * @param other          另一个碰撞箱
      * @param otherPoseStack 另一个碰撞箱坐标变换栈
      * @return 相交返回true
      */
-    public static boolean isColliding(ICollider collision, BoxPoseStack poseStack, ICollider other, BoxPoseStack otherPoseStack) {
+    public static boolean isColliding(ICollider<?, ?> collision, BoxPoseStack poseStack, ICollider<?, ?> other, BoxPoseStack otherPoseStack) {
         if (other == null) return false;
-        if (other == collision) return true;
         if (collision.disable() || other.disable()) return false;
+        if (other == collision) return true;
 
         collision.prepareColliding(poseStack);
         other.prepareColliding(otherPoseStack);
@@ -48,56 +47,56 @@ public final class ColliderUtil {
         switch (collision.getType()) {
             case OBB -> {
                 return switch (other.getType()) {
-                    case OBB -> isColliding((OBB) collision, (OBB) other);
-                    case SPHERE -> isColliding((Sphere) other, (OBB) collision);
-                    case CAPSULE -> isColliding((Capsule) other, (OBB) collision);
-                    case AABB -> isColliding((OBB) collision, new OBB((AABB) other));
-                    case RAY -> isColliding((Ray) other, (OBB) collision);
-                    case COMPOSITE -> isColliding((Composite) other, collision);
+                    case OBB -> isColliding((IOBB<?, ?>) collision, (IOBB<?, ?>) other);
+                    case SPHERE -> isColliding((ISphere<?, ?>) other, (IOBB<?, ?>) collision);
+                    case CAPSULE -> isColliding((ICapsule<?, ?>) other, (IOBB<?, ?>) collision);
+                    case AABB -> isColliding((IOBB<?, ?>) collision, new OBB<>((IAABB<?, ?>) other));
+                    case RAY -> isColliding((IRay<?, ?>) other, (IOBB<?, ?>) collision);
+                    case COMPOSITE -> isColliding((IComposite<?, ?>) other, collision);
                 };
             }
             case SPHERE -> {
                 return switch (other.getType()) {
-                    case OBB -> isColliding((Sphere) collision, (OBB) other);
-                    case SPHERE -> isColliding((Sphere) collision, (Sphere) other);
-                    case CAPSULE -> isColliding((Capsule) other, (Sphere) collision);
-                    case AABB -> isColliding((Sphere) collision, (AABB) other);
-                    case RAY -> isColliding((Ray) other, (Sphere) collision);
-                    case COMPOSITE -> isColliding((Composite) other, collision);
+                    case OBB -> isColliding((ISphere<?, ?>) collision, (IOBB<?, ?>) other);
+                    case SPHERE -> isColliding((ISphere<?, ?>) collision, (ISphere<?, ?>) other);
+                    case CAPSULE -> isColliding((ICapsule<?, ?>) other, (ISphere<?, ?>) collision);
+                    case AABB -> isColliding((ISphere<?, ?>) collision, (IAABB<?, ?>) other);
+                    case RAY -> isColliding((IRay<?, ?>) other, (ISphere<?, ?>) collision);
+                    case COMPOSITE -> isColliding((IComposite<?, ?>) other, collision);
                 };
             }
             case CAPSULE -> {
                 return switch (other.getType()) {
-                    case OBB -> isColliding((Capsule) collision, (OBB) other);
-                    case SPHERE -> isColliding((Capsule) collision, (Sphere) other);
-                    case CAPSULE -> isColliding((Capsule) collision, (Capsule) other);
-                    case AABB -> isColliding((Capsule) collision, (AABB) other);
-                    case RAY -> isColliding((Ray) other, (Capsule) collision);
-                    case COMPOSITE -> isColliding((Composite) other, collision);
+                    case OBB -> isColliding((ICapsule<?, ?>) collision, (IOBB<?, ?>) other);
+                    case SPHERE -> isColliding((ICapsule<?, ?>) collision, (ISphere<?, ?>) other);
+                    case CAPSULE -> isColliding((ICapsule<?, ?>) collision, (ICapsule<?, ?>) other);
+                    case AABB -> isColliding((ICapsule<?, ?>) collision, (IAABB<?, ?>) other);
+                    case RAY -> isColliding((IRay<?, ?>) other, (ICapsule<?, ?>) collision);
+                    case COMPOSITE -> isColliding((IComposite<?, ?>) other, collision);
                 };
             }
             case AABB -> {
                 return switch (other.getType()) {
-                    case OBB -> isColliding((OBB) other, new OBB((AABB) collision));
-                    case SPHERE -> isColliding((Sphere) other, (AABB) collision);
-                    case CAPSULE -> isColliding((Capsule) other, (AABB) collision);
-                    case AABB -> isColliding((AABB) collision, (AABB) other);
-                    case RAY -> isColliding((Ray) other, (AABB) collision);
-                    case COMPOSITE -> isColliding((Composite) other, collision);
+                    case OBB -> isColliding((IOBB<?, ?>) other, new OBB<>((IAABB<?, ?>) collision));
+                    case SPHERE -> isColliding((ISphere<?, ?>) other, (IAABB<?, ?>) collision);
+                    case CAPSULE -> isColliding((ICapsule<?, ?>) other, (IAABB<?, ?>) collision);
+                    case AABB -> isColliding((IAABB<?, ?>) collision, (IAABB<?, ?>) other);
+                    case RAY -> isColliding((IRay<?, ?>) other, (IAABB<?, ?>) collision);
+                    case COMPOSITE -> isColliding((IComposite<?, ?>) other, collision);
                 };
             }
             case RAY -> {
                 return switch (other.getType()) {
-                    case OBB -> isColliding((Ray) collision, (OBB) other);
-                    case SPHERE -> isColliding((Ray) collision, (Sphere) other);
-                    case CAPSULE -> isColliding((Ray) collision, (Capsule) other);
-                    case AABB -> isColliding((Ray) collision, (AABB) other);
-                    case RAY -> isColliding((Ray) collision, (Ray) other);
-                    case COMPOSITE -> isColliding((Composite) other, collision);
+                    case OBB -> isColliding((IRay<?, ?>) collision, (IOBB<?, ?>) other);
+                    case SPHERE -> isColliding((IRay<?, ?>) collision, (ISphere<?, ?>) other);
+                    case CAPSULE -> isColliding((IRay<?, ?>) collision, (ICapsule<?, ?>) other);
+                    case AABB -> isColliding((IRay<?, ?>) collision, (IAABB<?, ?>) other);
+                    case RAY -> isColliding((IRay<?, ?>) collision, (IRay<?, ?>) other);
+                    case COMPOSITE -> isColliding((IComposite<?, ?>) other, collision);
                 };
             }
             case COMPOSITE -> {
-                return isColliding((Composite) collision, other);
+                return isColliding((IComposite<?, ?>) collision, other);
             }
             default -> {
                 return false;
@@ -119,11 +118,12 @@ public final class ColliderUtil {
      *      ICollider colliderB = B.getData(...);
      *      boolean result = ColliderUtil.isColliding(colliderA, colliderB);
      * }</pre>
+     *
      * @param collision 任意碰撞箱
-     * @param other 另一个碰撞箱
+     * @param other     另一个碰撞箱
      * @return 相交返回true
      */
-    public static boolean isColliding(ICollider collision, ICollider other) {
+    public static boolean isColliding(ICollider<?, ?> collision, ICollider<?, ?> other) {
         return isColliding(collision, EMPTY_POSE_STACK, other, EMPTY_POSE_STACK);
     }
 
@@ -263,13 +263,13 @@ public final class ColliderUtil {
      * @param obb   OBB盒
      * @return 在OBB上离待判定点最近的点
      */
-    public static Vector3f getClosestPointOBB(Vector3f point, OBB obb) {
-        Vector3f nearP = new Vector3f(obb.globalCenter);
+    public static Vector3f getClosestPointOBB(Vector3f point, IOBB<?, ?> obb) {
+        Vector3f nearP = new Vector3f(obb.getGlobalCenter());
         //求球心与OBB中心的距离向量 从OBB中心指向球心
         Vector3f dist = point.sub(nearP, new Vector3f());
 
-        float[] extents = new float[]{obb.halfExtents.x, obb.halfExtents.y, obb.halfExtents.z};
-        Vector3f[] axes = obb.axes;
+        float[] extents = new float[]{obb.getHalfExtents().x, obb.getHalfExtents().y, obb.getHalfExtents().z};
+        Vector3f[] axes = obb.getGlobalAxes();
 
         for (int i = 0; i < 3; i++) {
             //计算距离向量到OBB坐标轴的投影长度 即距离向量在OBB坐标系中的对应坐标轴的长度
@@ -284,12 +284,13 @@ public final class ColliderUtil {
         return nearP;
     }
 
-    private static Vector3f getClosestPointAABB(Vector3f point, AABB aabb) {
+    private static Vector3f getClosestPointAABB(Vector3f point, IAABB<?, ?> aabb) {
         Vector3f nearP = new Vector3f();
-        Vector3f offset = aabb.hitboxApi$getGlobalOffset();
-        nearP.x = (float) Math.clamp(point.x, aabb.minX + offset.x, aabb.maxX + offset.x);
-        nearP.y = (float) Math.clamp(point.y, aabb.minY + offset.y, aabb.maxY + offset.y);
-        nearP.z = (float) Math.clamp(point.z, aabb.minZ + offset.z, aabb.maxZ + offset.z);
+        Vector3f min = aabb.getGlobalMin();
+        Vector3f max = aabb.getGlobalMax();
+        nearP.x = Math.clamp(point.x, min.x, max.x);
+        nearP.y = Math.clamp(point.y, min.y, max.y);
+        nearP.z = Math.clamp(point.z, min.z, max.z);
         return nearP;
     }
 
@@ -300,21 +301,21 @@ public final class ColliderUtil {
      * @param other   胶囊体
      * @return 碰撞返回true
      */
-    public static boolean isColliding(Capsule capsule, Capsule other) {
+    public static boolean isColliding(ICapsule<?, ?> capsule, ICapsule<?, ?> other) {
         //计算头尾点最值
-        float h = capsule.height / 2;
-        Vector3f pointA1 = capsule.direction.mul(h, new Vector3f()).add(capsule.globalCenter);
-        Vector3f pointA2 = capsule.direction.mul(-h, new Vector3f()).add(capsule.globalCenter);
+        float h = capsule.getHeight() / 2;
+        Vector3f pointA1 = capsule.getGlobalDirection().mul(h, new Vector3f()).add(capsule.getGlobalCenter());
+        Vector3f pointA2 = capsule.getGlobalDirection().mul(-h, new Vector3f()).add(capsule.getGlobalCenter());
 
-        h = other.height / 2;
-        Vector3f pointB1 = other.direction.mul(h, new Vector3f()).add(other.globalCenter);
-        Vector3f pointB2 = other.direction.mul(-h, new Vector3f()).add(other.globalCenter);
+        h = other.getHeight() / 2;
+        Vector3f pointB1 = other.getGlobalDirection().mul(h, new Vector3f()).add(other.getGlobalCenter());
+        Vector3f pointB2 = other.getGlobalDirection().mul(-h, new Vector3f()).add(other.getGlobalCenter());
 
         // 求两条线段的最短距离
         float distance = getClosestDistanceBetweenSegmentsSqr(pointA1, pointA2, pointB1, pointB2);
 
         //求两个球半径和
-        float totalRadius = (float) Math.pow(capsule.radius + other.radius, 2);
+        float totalRadius = (float) Math.pow(capsule.getRadius() + other.getRadius(), 2);
         //距离小于等于半径和则碰撞
         return distance <= totalRadius;
     }
@@ -326,18 +327,18 @@ public final class ColliderUtil {
      * @param sphere  球体
      * @return 有碰撞返回true
      */
-    public static boolean isColliding(Capsule capsule, Sphere sphere) {
+    public static boolean isColliding(ICapsule<?, ?> capsule, ISphere<?, ?> sphere) {
         //计算头尾点最值
-        float height = capsule.height / 2;
-        Vector3f point1 = capsule.direction.mul(height, new Vector3f()).add(capsule.globalCenter);
-        Vector3f point2 = capsule.direction.mul(-height, new Vector3f()).add(capsule.globalCenter);
+        float height = capsule.getHeight() / 2;
+        Vector3f point1 = capsule.getGlobalDirection().mul(height, new Vector3f()).add(capsule.getGlobalCenter());
+        Vector3f point2 = capsule.getGlobalDirection().mul(-height, new Vector3f()).add(capsule.getGlobalCenter());
 
-        Vector3f closest = ColliderUtil.getClosestPointOnSegment(point1, point2, sphere.globalCenter);
+        Vector3f closest = ColliderUtil.getClosestPointOnSegment(point1, point2, sphere.getGlobalCenter());
 
         //求两个球半径和
-        float totalRadius = (float) Math.pow(capsule.radius + sphere.radius, 2);
+        float totalRadius = (float) Math.pow(capsule.getRadius() + sphere.getRadius(), 2);
         //球两个球心之间的距离
-        float distance = closest.sub(sphere.globalCenter).lengthSquared();
+        float distance = closest.sub(sphere.getGlobalCenter()).lengthSquared();
         //距离小于等于半径和则碰撞
         return distance <= totalRadius;
     }
@@ -349,17 +350,17 @@ public final class ColliderUtil {
      * @param obb     OBB盒
      * @return 有碰撞返回true
      */
-    public static boolean isColliding(Capsule capsule, OBB obb) {
+    public static boolean isColliding(ICapsule<?, ?> capsule, IOBB<?, ?> obb) {
         //计算头尾点最值
-        float height = capsule.height / 2;
-        Vector3f point1 = capsule.direction.mul(height, new Vector3f()).add(capsule.globalCenter);
-        Vector3f point2 = capsule.direction.mul(-height, new Vector3f()).add(capsule.globalCenter);
+        float height = capsule.getHeight() / 2;
+        Vector3f point1 = capsule.getGlobalDirection().mul(height, new Vector3f()).add(capsule.getGlobalCenter());
+        Vector3f point2 = capsule.getGlobalDirection().mul(-height, new Vector3f()).add(capsule.getGlobalCenter());
 
-        Vector3f closest1 = getClosestPointOnSegment(point1, point2, obb.globalCenter);
+        Vector3f closest1 = getClosestPointOnSegment(point1, point2, obb.getGlobalCenter());
         Vector3f closest2 = getClosestPointOBB(closest1, obb);
 
         //求胶囊体半径平方
-        float totalRadius = (float) Math.pow(capsule.radius, 2);
+        float totalRadius = (float) Math.pow(capsule.getRadius(), 2);
         //求两个点之间的距离
         float distance = (closest1.sub(closest2)).lengthSquared();
         //距离小于等于半径平方则碰撞
@@ -373,9 +374,11 @@ public final class ColliderUtil {
      * @param other OBB盒
      * @return 有碰撞返回true
      */
-    public static boolean isColliding(OBB obb, OBB other) {
+    public static boolean isColliding(IOBB<?, ?> obb, IOBB<?, ?> other) {
         //joml居然实现了obb碰撞
-        return Intersectionf.testObOb(obb.globalCenter, obb.axes[0], obb.axes[1], obb.axes[2], obb.halfExtents, other.globalCenter, other.axes[0], other.axes[1], other.axes[2], other.halfExtents);
+        Vector3f[] axes1 = obb.getGlobalAxes();
+        Vector3f[] axes2 = other.getGlobalAxes();
+        return Intersectionf.testObOb(obb.getGlobalCenter(), axes1[0], axes1[1], axes1[2], obb.getHalfExtents(), other.getGlobalCenter(), axes2[0], axes2[1], axes2[2], other.getHalfExtents());
     }
 
     /**
@@ -385,12 +388,12 @@ public final class ColliderUtil {
      * @param obb    OBB盒
      * @return 有碰撞返回true
      */
-    public static boolean isColliding(Sphere sphere, OBB obb) {
+    public static boolean isColliding(ISphere<?, ?> sphere, IOBB<?, ?> obb) {
         //求最近点
-        Vector3f nearP = getClosestPointOBB(sphere.globalCenter, obb);
+        Vector3f nearP = getClosestPointOBB(sphere.getGlobalCenter(), obb);
         //与AABB检测原理相同
-        float distance = nearP.sub(sphere.globalCenter).lengthSquared();
-        float radius = (float) Math.pow(sphere.radius, 2);
+        float distance = nearP.sub(sphere.getGlobalCenter()).lengthSquared();
+        float radius = (float) Math.pow(sphere.getRadius(), 2);
         return distance <= radius;
     }
 
@@ -401,8 +404,9 @@ public final class ColliderUtil {
      * @param other  球体
      * @return 有碰撞返回true
      */
-    public static boolean isColliding(Sphere sphere, Sphere other) {
-        return sphere.globalCenter.distanceSquared(other.globalCenter) <= Math.pow(sphere.radius + other.radius, 2);
+    public static boolean isColliding(ISphere<?, ?> sphere, ISphere<?, ?> other) {
+//        return Intersectionf.testSphereSphere(sphere.globalCenter, sphere.radius, other.globalCenter, other.radius);
+        return sphere.getGlobalCenter().distanceSquared(other.getGlobalCenter()) <= Math.pow(sphere.getRadius() + other.getRadius(), 2);
     }
 
     /**
@@ -412,15 +416,15 @@ public final class ColliderUtil {
      * @param aabb   AABB盒
      * @return 有碰撞返回true
      */
-    public static boolean isColliding(Sphere sphere, AABB aabb) {
-        //求出最近点
-        Vector3f center = sphere.globalCenter;
+    public static boolean isColliding(ISphere<?, ?> sphere, IAABB<?, ?> aabb) {
+        return Intersectionf.testAabSphere(aabb.getGlobalMin(), aabb.getGlobalMax(), sphere.getGlobalCenter(), sphere.getRadius());
+        /*//求出最近点
         Vector3f nearP = getClosestPointAABB(center, aabb);
         //求出最近点与球心的距离
         float distance = nearP.sub(center).lengthSquared();
         float radius = (float) Math.pow(sphere.radius, 2);
         //距离小于半径则碰撞
-        return distance <= radius;
+        return distance <= radius;*/
     }
 
     /**
@@ -430,18 +434,17 @@ public final class ColliderUtil {
      * @param aabb    AABB盒
      * @return 有碰撞返回true
      */
-    public static boolean isColliding(Capsule capsule, AABB aabb) {
+    public static boolean isColliding(ICapsule<?, ?> capsule, IAABB<?, ?> aabb) {
         //计算头尾点最值
-        float height = capsule.height / 2;
-        Vector3f pointA1 = capsule.direction.mul(height, new Vector3f()).add(capsule.globalCenter);
-        Vector3f pointA2 = capsule.direction.mul(-height, new Vector3f()).add(capsule.globalCenter);
+        float height = capsule.getHeight() / 2;
+        Vector3f pointA1 = capsule.getGlobalDirection().mul(height, new Vector3f()).add(capsule.getGlobalCenter());
+        Vector3f pointA2 = capsule.getGlobalDirection().mul(-height, new Vector3f()).add(capsule.getGlobalCenter());
 
-        Vector3f offset = aabb.hitboxApi$getGlobalOffset();
-        Vector3f closest1 = getClosestPointOnSegment(pointA1, pointA2, aabb.getCenter().toVector3f().add(offset));
+        Vector3f closest1 = getClosestPointOnSegment(pointA1, pointA2, aabb.getGlobalCenter());
         Vector3f closest2 = getClosestPointAABB(closest1, aabb);
 
         //求胶囊体半径平方
-        float totalRadius = (float) Math.pow(capsule.radius, 2);
+        float totalRadius = (float) Math.pow(capsule.getRadius(), 2);
         //求两个点之间的距离
         float distance = closest1.sub(closest2).lengthSquared();
 
@@ -456,9 +459,8 @@ public final class ColliderUtil {
      * @param aabb AABB盒
      * @return 有碰撞返回true
      */
-    public static boolean isColliding(Ray ray, AABB aabb) {
-        Vector3f offset = aabb.hitboxApi$getGlobalOffset();
-        return Intersectionf.testRayAab(ray.globalOrigin, ray.globalDirection, new Vector3f((float) aabb.minX, (float) aabb.minY, (float) aabb.minZ).add(offset), new Vector3f((float) aabb.maxX, (float) aabb.maxY, (float) aabb.maxZ).add(offset));
+    public static boolean isColliding(IRay<?, ?> ray, IAABB<?, ?> aabb) {
+        return Intersectionf.testRayAab(ray.getGlobalOrigin(), ray.getGlobalDirection(), aabb.getGlobalMin(), aabb.getGlobalMax());
     }
 
     /**
@@ -468,8 +470,18 @@ public final class ColliderUtil {
      * @param sphere 球体
      * @return 有碰撞返回true
      */
-    public static boolean isColliding(Ray ray, Sphere sphere) {
-        return Intersectionf.testRaySphere(ray.globalOrigin, ray.globalDirection, sphere.globalCenter, sphere.radius);
+    public static boolean isColliding(IRay<?, ?> ray, ISphere<?, ?> sphere) {
+        Vector3f origin = ray.getGlobalOrigin();
+        Vector3f direction = ray.getGlobalDirection();
+        float length = ray.getLength();
+        float x = origin.x + direction.x * length;
+        float y = origin.y + direction.y * length;
+        float z = origin.z + direction.z * length;
+
+        Vector3f center = sphere.getGlobalCenter();
+        float radius = sphere.getRadius();
+
+        return Intersectionf.testLineSegmentSphere(origin.x, origin.y, origin.z, x, y, z, center.x, center.y, center.z, radius * radius);
     }
 
     /**
@@ -479,20 +491,26 @@ public final class ColliderUtil {
      * @param obb OBB盒
      * @return 有碰撞返回true
      */
-    public static boolean isColliding(Ray ray, OBB obb) {
+    public static boolean isColliding(IRay<?, ?> ray, IOBB<?, ?> obb) {
+        Vector3f origin = ray.getGlobalOrigin();
+        Vector3f direction = ray.getGlobalDirection();
 
         Vector3f v = new Vector3f();
+        Vector3f center = obb.getGlobalCenter();
+        Vector3f[] axes = obb.getGlobalAxes();
+        Vector3f halfExtents = obb.getHalfExtents();
+        Vector3f[] vertices = obb.getGlobalVertices();
 
         //判断不在OBB内
-        Vector3f centerDis = ray.globalOrigin.sub(obb.globalCenter, v);
-        float ray2ObbX = centerDis.dot(obb.axes[0]);
-        float ray2ObbY = centerDis.dot(obb.axes[1]);
-        float ray2ObbZ = centerDis.dot(obb.axes[2]);
-        boolean checkNotInside = ray2ObbX < -obb.halfExtents.x || ray2ObbX > obb.halfExtents.x ||
-                ray2ObbY < -obb.halfExtents.y || ray2ObbY > obb.halfExtents.y ||
-                ray2ObbZ < -obb.halfExtents.z || ray2ObbZ > obb.halfExtents.z;
+        Vector3f centerDis = origin.sub(center, v);
+        float ray2ObbX = centerDis.dot(axes[0]);
+        float ray2ObbY = centerDis.dot(axes[1]);
+        float ray2ObbZ = centerDis.dot(axes[2]);
+        boolean checkNotInside = ray2ObbX < -halfExtents.x || ray2ObbX > halfExtents.x ||
+                ray2ObbY < -halfExtents.y || ray2ObbY > halfExtents.y ||
+                ray2ObbZ < -halfExtents.z || ray2ObbZ > halfExtents.z;
         //判断反向情况
-        boolean checkFoward = obb.globalCenter.sub(obb.globalCenter, v).dot(ray.globalDirection) < 0;
+        boolean checkFoward = center.sub(center, v).dot(direction) < 0;
 
         if (checkNotInside && checkFoward) {
             return false;
@@ -500,20 +518,20 @@ public final class ColliderUtil {
 
         //判断是否相交
         Vector3f min = new Vector3f();
-        Vector3f minP = obb.vertices[4].sub(ray.globalOrigin, v);
-        min.x = minP.dot(obb.axes[0]);
-        min.y = minP.dot(obb.axes[1]);
-        min.z = minP.dot(obb.axes[2]);
+        Vector3f minP = vertices[4].sub(origin, v);
+        min.x = minP.dot(axes[0]);
+        min.y = minP.dot(axes[1]);
+        min.z = minP.dot(axes[2]);
 
         Vector3f max = new Vector3f();
-        Vector3f maxP = obb.vertices[2].sub(ray.globalOrigin, v);
-        max.x = maxP.dot(obb.axes[0]);
-        max.y = maxP.dot(obb.axes[1]);
-        max.z = maxP.dot(obb.axes[2]);
+        Vector3f maxP = vertices[2].sub(origin, v);
+        max.x = maxP.dot(axes[0]);
+        max.y = maxP.dot(axes[1]);
+        max.z = maxP.dot(axes[2]);
 
 
         Vector3f projection = new Vector3f();
-        projection.x = 1 / ray.globalDirection.dot(obb.axes[2]);
+        projection.x = 1 / direction.dot(axes[2]);
 
         Vector3f pMin = min.mul(projection);
         Vector3f pMax = max.mul(projection);
@@ -541,7 +559,7 @@ public final class ColliderUtil {
         float f = Math.min(Math.min(pMax.x, pMax.y), pMax.z);
 
         if (checkNotInside) {
-            return n < f && ray.length >= n;
+            return n < f && ray.getLength() >= n;
         }
 
         return true;
@@ -554,12 +572,12 @@ public final class ColliderUtil {
      * @param capsule 胶囊体
      * @return 有碰撞返回true
      */
-    public static boolean isColliding(Ray ray, Capsule capsule) {
-        float halfHeight = capsule.height / 2.0f;
-        Vector3f startPoint = capsule.direction.mul(-halfHeight, new Vector3f()).add(capsule.globalCenter);
-        Vector3f endPoint = capsule.direction.mul(halfHeight, new Vector3f()).add(capsule.globalCenter);
-        float sqr = getClosestDistanceBetweenSegmentsSqr(ray.globalOrigin, ray.getEnd(), startPoint, endPoint);
-        return sqr <= Math.pow(capsule.radius, 2);
+    public static boolean isColliding(IRay<?, ?> ray, ICapsule<?, ?> capsule) {
+        float halfHeight = capsule.getHeight() / 2.0f;
+        Vector3f startPoint = capsule.getGlobalDirection().mul(-halfHeight, new Vector3f()).add(capsule.getGlobalCenter());
+        Vector3f endPoint = capsule.getGlobalDirection().mul(halfHeight, new Vector3f()).add(capsule.getGlobalCenter());
+        float sqr = getClosestDistanceBetweenSegmentsSqr(ray.getGlobalOrigin(), ray.getGlobalEnd(), startPoint, endPoint);
+        return sqr <= Math.pow(capsule.getRadius(), 2);
     }
 
     /**
@@ -570,8 +588,8 @@ public final class ColliderUtil {
      * @param other 射线
      * @return 有碰撞返回true
      */
-    public static boolean isColliding(Ray ray, Ray other) {
-        return isSegmentCross(ray.globalOrigin, ray.getEnd(), other.globalOrigin, other.getEnd());
+    public static boolean isColliding(IRay<?, ?> ray, IRay<?, ?> other) {
+        return isSegmentCross(ray.getGlobalOrigin(), ray.getGlobalEnd(), other.getGlobalOrigin(), other.getGlobalEnd());
     }
 
     /**
@@ -581,11 +599,11 @@ public final class ColliderUtil {
      * @param other     其他碰撞体
      * @return 有碰撞返回true
      */
-    public static boolean isColliding(Composite composite, ICollider other) {
-        int count = composite.getCollisionCount();
+    public static boolean isColliding(IComposite<?, ?> composite, ICollider<?, ?> other) {
+        int count = composite.getCollidersCount();
 
         for (int i = 0; i < count; i++) {
-            if (other.isColliding(composite.getCollision(i))) {
+            if (other.isColliding(composite.getCollider(i))) {
                 return true;
             }
         }
@@ -600,13 +618,7 @@ public final class ColliderUtil {
      * @param other AABB盒
      * @return 有碰撞返回true
      */
-    public static boolean isColliding(AABB aabb, AABB other) {
-        Vector3f aOffset = aabb.hitboxApi$getGlobalOffset();
-        Vector3f bOffset = other.hitboxApi$getGlobalOffset();
-        return Intersectionf.testAabAab(
-                (float) (aabb.minX + aOffset.x), (float) (aabb.minY + aOffset.y), (float) (aabb.minZ + aOffset.z),
-                (float) (aabb.maxX + aOffset.x), (float) (aabb.maxY + aOffset.y), (float) (aabb.maxZ + aOffset.z),
-                (float) (other.minX + bOffset.x), (float) (other.minY + bOffset.y), (float) (other.minZ + bOffset.z),
-                (float) (other.maxX + bOffset.x), (float) (other.maxY + bOffset.y), (float) (other.maxZ + bOffset.z));
+    public static boolean isColliding(IAABB<?, ?> aabb, IAABB<?, ?> other) {
+        return Intersectionf.testAabAab(aabb.getGlobalMin(), aabb.getGlobalMax(), other.getGlobalMin(), other.getGlobalMax());
     }
 }

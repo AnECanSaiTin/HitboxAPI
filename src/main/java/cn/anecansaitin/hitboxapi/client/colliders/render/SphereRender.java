@@ -1,10 +1,10 @@
 package cn.anecansaitin.hitboxapi.client.colliders.render;
 
-import cn.anecansaitin.hitboxapi.common.colliders.ICollider;
-import cn.anecansaitin.hitboxapi.common.colliders.Sphere;
+import cn.anecansaitin.hitboxapi.common.collider.ICollider;
+import cn.anecansaitin.hitboxapi.common.collider.ISphere;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.world.entity.Entity;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,16 +16,18 @@ public class SphereRender implements ICollisionRender {
     private SphereRender() {}
 
     @Override
-    public void render(ICollider collision, PoseStack poseStack, VertexConsumer buffer, Entity entity, float red, float green, float blue, float alpha) {
-        Sphere sphere = (Sphere) collision;
+    public void render(ICollider<?, ?> collision, PoseStack poseStack, VertexConsumer buffer, float red, float green, float blue, float alpha) {
+        ISphere<?, ?> sphere = (ISphere<?, ?>) collision;
         PoseStack.Pose pose = poseStack.last();
         float[] vertex = cachedVertices[0];
         float[] normal = cachedVertices[1];
+        float radius = sphere.getRadius();
+        Vector3f center = sphere.getLocalCenter();
 
         for (int i = 0; i < vertex.length; i += 3) {
-            float x = vertex[i] * sphere.radius + sphere.center.x;
-            float y = vertex[i + 1] * sphere.radius + sphere.center.y;
-            float z = vertex[i + 2] * sphere.radius + sphere.center.z;
+            float x = vertex[i] * radius + center.x;
+            float y = vertex[i + 1] * radius + center.y;
+            float z = vertex[i + 2] * radius + center.z;
 
             float nx = normal[i];
             float ny = normal[i + 1];
