@@ -1,8 +1,10 @@
-package cn.anecansaitin.hitboxapi.common.attachment;
+package cn.anecansaitin.hitboxapi.api.common.attachment;
 
 import cn.anecansaitin.hitboxapi.common.collider.BoxPoseStack;
-import cn.anecansaitin.hitboxapi.common.collider.ICollider;
+import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import java.util.Map;
 

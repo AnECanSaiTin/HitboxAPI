@@ -2,9 +2,9 @@ package cn.anecansaitin.hitboxapi.common.listener;
 
 import cn.anecansaitin.hitboxapi.HitboxApi;
 import cn.anecansaitin.hitboxapi.common.HitboxDataAttachments;
-import cn.anecansaitin.hitboxapi.common.attachment.IEntityColliderHolder;
+import cn.anecansaitin.hitboxapi.api.common.attachment.IEntityColliderHolder;
 import cn.anecansaitin.hitboxapi.common.collider.BoxPoseStack;
-import cn.anecansaitin.hitboxapi.common.collider.ICollider;
+import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;

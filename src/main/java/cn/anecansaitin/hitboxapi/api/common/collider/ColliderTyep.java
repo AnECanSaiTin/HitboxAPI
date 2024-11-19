@@ -1,4 +1,4 @@
-package cn.anecansaitin.hitboxapi.common.collider;
+package cn.anecansaitin.hitboxapi.api.common.collider;
 
 public enum ColliderTyep {
     OBB,

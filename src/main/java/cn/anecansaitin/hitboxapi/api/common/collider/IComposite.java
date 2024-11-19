@@ -1,7 +1,7 @@
-package cn.anecansaitin.hitboxapi.common.collider;
+package cn.anecansaitin.hitboxapi.api.common.collider;
 
-import cn.anecansaitin.hitboxapi.client.colliders.render.CompositeRender;
-import cn.anecansaitin.hitboxapi.client.colliders.render.ICollisionRender;
+import cn.anecansaitin.hitboxapi.client.collider.render.CompositeRender;
+import cn.anecansaitin.hitboxapi.api.client.collider.ICollisionRender;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 

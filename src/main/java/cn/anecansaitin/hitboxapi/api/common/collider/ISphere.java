@@ -1,7 +1,7 @@
-package cn.anecansaitin.hitboxapi.common.collider;
+package cn.anecansaitin.hitboxapi.api.common.collider;
 
-import cn.anecansaitin.hitboxapi.client.colliders.render.ICollisionRender;
-import cn.anecansaitin.hitboxapi.client.colliders.render.SphereRender;
+import cn.anecansaitin.hitboxapi.api.client.collider.ICollisionRender;
+import cn.anecansaitin.hitboxapi.client.collider.render.SphereRender;
 import org.joml.Vector3f;
 
 public interface ISphere<T, D> extends ICollider<T, D> {

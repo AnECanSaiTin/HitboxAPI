@@ -1,9 +1,9 @@
 package cn.anecansaitin.hitboxapi.mixin.client;
 
-import cn.anecansaitin.hitboxapi.client.colliders.render.ICollisionRender;
+import cn.anecansaitin.hitboxapi.api.client.collider.ICollisionRender;
 import cn.anecansaitin.hitboxapi.common.HitboxDataAttachments;
-import cn.anecansaitin.hitboxapi.common.attachment.IEntityColliderHolder;
-import cn.anecansaitin.hitboxapi.common.collider.ICollider;
+import cn.anecansaitin.hitboxapi.api.common.attachment.IEntityColliderHolder;
+import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;

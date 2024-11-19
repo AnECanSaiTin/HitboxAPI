@@ -1,5 +1,7 @@
 package cn.anecansaitin.hitboxapi.common.collider;
 
+import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
+import cn.anecansaitin.hitboxapi.api.common.collider.IComposite;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.ints.IntObjectImmutablePair;
 import it.unimi.dsi.fastutil.ints.IntObjectPair;

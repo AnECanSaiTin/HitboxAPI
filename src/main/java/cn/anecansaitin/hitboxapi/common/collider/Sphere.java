@@ -1,5 +1,6 @@
 package cn.anecansaitin.hitboxapi.common.collider;
 
+import cn.anecansaitin.hitboxapi.api.common.collider.ISphere;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 

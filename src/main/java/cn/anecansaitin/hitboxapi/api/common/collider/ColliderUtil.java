@@ -1,5 +1,7 @@
-package cn.anecansaitin.hitboxapi.common.collider;
+package cn.anecansaitin.hitboxapi.api.common.collider;
 
+import cn.anecansaitin.hitboxapi.common.collider.BoxPoseStack;
+import cn.anecansaitin.hitboxapi.common.collider.OBB;
 import org.joml.Intersectionf;
 import org.joml.Vector3f;
 

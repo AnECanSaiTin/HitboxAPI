@@ -1,7 +1,8 @@
-package cn.anecansaitin.hitboxapi.client.colliders.render;
+package cn.anecansaitin.hitboxapi.client.collider.render;
 
-import cn.anecansaitin.hitboxapi.common.collider.ICollider;
-import cn.anecansaitin.hitboxapi.common.collider.IRay;
+import cn.anecansaitin.hitboxapi.api.client.collider.ICollisionRender;
+import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
+import cn.anecansaitin.hitboxapi.api.common.collider.IRay;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.joml.Vector3f;

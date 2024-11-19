@@ -1,12 +1,18 @@
 package cn.anecansaitin.hitboxapi.common.attachment;
 
+import cn.anecansaitin.hitboxapi.api.common.attachment.IEntityColliderHolder;
+import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
 import cn.anecansaitin.hitboxapi.common.collider.*;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
+import net.neoforged.neoforge.common.util.INBTSerializable;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class EntityColliderHolder implements IEntityColliderHolder{
+public class EntityColliderHolder implements IEntityColliderHolder {
     /**
      * 受击判定
      */
