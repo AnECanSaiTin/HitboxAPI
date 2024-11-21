@@ -1,14 +1,13 @@
 package cn.anecansaitin.hitboxapi.common.listener;
 
 import cn.anecansaitin.hitboxapi.HitboxApi;
+import cn.anecansaitin.hitboxapi.api.common.collider.ColliderUtil;
 import cn.anecansaitin.hitboxapi.common.HitboxDataAttachments;
 import cn.anecansaitin.hitboxapi.api.common.attachment.IEntityColliderHolder;
 import cn.anecansaitin.hitboxapi.common.collider.BoxPoseStack;
 import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
-import net.minecraft.client.Minecraft;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
@@ -29,18 +28,14 @@ public class LevelTick {
         Level level = event.getLevel();
 
         if (level.isClientSide) {
-            collision(Minecraft.getInstance().player);
-        } else {
-            ServerLevel serverLevel = (ServerLevel) level;
+            return;
+        }
 
-            //todo 这里可能需要多线程
-            for (Entity entity : serverLevel.getAllEntities()) {
-                if (entity instanceof Player) {
-                    continue;
-                }
+        ServerLevel serverLevel = (ServerLevel) level;
 
-                collision(entity);
-            }
+        //todo 这里可能需要多线程
+        for (Entity entity : serverLevel.getAllEntities()) {
+            collision(entity);
         }
     }
 
@@ -58,7 +53,7 @@ public class LevelTick {
         Collection<ICollider<Entity, Void>> hitBoxValues = hitBox.values();
 
         //更新坐标变换栈
-        updatePose(entity, entityColliderHolder);
+        entityColliderHolder.updatePoseStack(entity);
 
         //todo 如何判断检测的范围
         List<Entity> entities = entity.level().getEntities(entity, entity.getBoundingBox().inflate(5));
@@ -77,33 +72,17 @@ public class LevelTick {
             // 没有受击盒则跳过
             if (hurtBox.isEmpty()) continue;
 
-            updatePose(enemy, enemyColliderHolder);
+            enemyColliderHolder.updatePoseStack(enemy);
 
             for (ICollider<Entity, Void> hit : hitBoxValues) {
                 for (ICollider<Entity, Void> hurt : hurtBox.values()) {
-                    if (!hit.isColliding(entityColliderHolder.getPoseStack(), hurt, enemyColliderHolder.getPoseStack())) {
+                    if (!ColliderUtil.isColliding(hit, entityColliderHolder.getPoseStack(), entity, null, hurt, enemyColliderHolder.getPoseStack(), enemy, null)) {
                         continue;
                     }
 
-                    hit.onCollide(entity, enemy, hurt, null);
-                    hurt.onCollide(enemy, entity, hit, null);
                     continue enemyFor;
                 }
             }
-        }
-    }
-
-    private static void updatePose(Entity entity, IEntityColliderHolder entityColliderHolder) {
-        BoxPoseStack.Pose pose = entityColliderHolder.getPoseStack().last();
-        Vector3f posePos = pose.position;
-        Vec3 position = entity.position();
-        float x = (float) position.x;
-        float y = (float) position.y;
-        float z = (float) position.z;
-
-        if (!posePos.equals(x, y, z)) {
-            posePos.set(x, y, z);
-            pose.isDirty = true;
         }
     }
 }

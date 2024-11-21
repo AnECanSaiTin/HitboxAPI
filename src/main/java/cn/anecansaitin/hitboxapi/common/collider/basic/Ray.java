@@ -1,20 +1,21 @@
-package cn.anecansaitin.hitboxapi.common.collider;
+package cn.anecansaitin.hitboxapi.common.collider.basic;
 
 import cn.anecansaitin.hitboxapi.api.common.collider.IRay;
+import cn.anecansaitin.hitboxapi.common.collider.BoxPoseStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class Ray<T, D> implements IRay<T, D> {
-    public final Vector3f LocalOrigin; // 射线的起点
+    public final Vector3f localOrigin; // 射线的起点
     public final Vector3f globalOrigin; // 射线的起点
     public final Vector3f localDirection;
     public final Vector3f globalDirection;
-    public final float length; // 射线的长度
+    public float length; // 射线的长度
 
     public boolean disable;
 
     public Ray(Vector3f LocalOrigin, Vector3f localDirection, float length) {
-        this.LocalOrigin = LocalOrigin;
+        this.localOrigin = LocalOrigin;
         this.globalOrigin = new Vector3f(LocalOrigin);
         this.localDirection = localDirection.normalize();
         this.globalDirection = new Vector3f(localDirection);
@@ -30,7 +31,7 @@ public class Ray<T, D> implements IRay<T, D> {
         BoxPoseStack.Pose pose = poseStack.last();
         Vector3f posOffset = pose.position;
         Quaternionf rotOffset = pose.rotation;
-        rotOffset.transform(this.LocalOrigin, globalOrigin).add(posOffset);
+        rotOffset.transform(this.localOrigin, globalOrigin).add(posOffset);
         rotOffset.transform(this.localDirection, globalDirection);
     }
 
@@ -51,7 +52,7 @@ public class Ray<T, D> implements IRay<T, D> {
 
     @Override
     public Vector3f getLocalOrigin() {
-        return LocalOrigin;
+        return localOrigin;
     }
 
     @Override

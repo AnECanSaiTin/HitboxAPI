@@ -1,7 +1,8 @@
-package cn.anecansaitin.hitboxapi.common.collider;
+package cn.anecansaitin.hitboxapi.common.collider.basic;
 
 import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
 import cn.anecansaitin.hitboxapi.api.common.collider.IComposite;
+import cn.anecansaitin.hitboxapi.common.collider.BoxPoseStack;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.ints.IntObjectImmutablePair;
 import it.unimi.dsi.fastutil.ints.IntObjectPair;
@@ -15,8 +16,8 @@ public class Composite<T, D> implements IComposite<T, D> {
     public final Vector3f position;
     public final Quaternionf rotation;
     public final HashMap<String, IntObjectPair<ICollider<T, D>>> collisionMap = new HashMap<>();
-    public final ICollider<T, D>[] colliders;
-    public final String[] colliderNames;
+    public ICollider<T, D>[] colliders;
+    public String[] colliderNames;
     public final Vector3f globalPosition;
     public final Quaternionf globalRotation;
 

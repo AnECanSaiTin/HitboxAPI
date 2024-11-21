@@ -1,7 +1,8 @@
-package cn.anecansaitin.hitboxapi.common.collider;
+package cn.anecansaitin.hitboxapi.common.collider.basic;
 
 import cn.anecansaitin.hitboxapi.api.common.collider.IAABB;
 import cn.anecansaitin.hitboxapi.api.common.collider.IOBB;
+import cn.anecansaitin.hitboxapi.common.collider.BoxPoseStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -15,10 +16,6 @@ public class OBB<T, D> implements IOBB<T, D> {
 
     public boolean disable;
     private boolean isDirty;
-
-    public OBB() {
-        this(new Vector3f(), new Vector3f(1, 1, 1), new Quaternionf());
-    }
 
     public OBB(Vector3f localCenter, Vector3f halfExtents, Quaternionf localRotation) {
         globalAxes[0] = new Vector3f(1, 0, 0);

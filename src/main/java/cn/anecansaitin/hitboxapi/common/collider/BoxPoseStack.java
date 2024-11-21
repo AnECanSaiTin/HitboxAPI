@@ -1,5 +1,6 @@
 package cn.anecansaitin.hitboxapi.common.collider;
 
+import cn.anecansaitin.hitboxapi.common.collider.basic.Composite;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -32,7 +33,7 @@ import java.util.Deque;
  *  <br/>
  *
  *  为便于复合碰撞箱的嵌套，提供了栈功能，用法类似与原版渲染PoseStack。<br/>
- *  {@link cn.anecansaitin.hitboxapi.common.collider.Composite#prepareColliding(cn.anecansaitin.hitboxapi.common.collider.BoxPoseStack)}
+ *  {@link Composite#prepareColliding(cn.anecansaitin.hitboxapi.common.collider.BoxPoseStack)}
  */
 public class BoxPoseStack {
     private final Deque<BoxPoseStack.Pose> poseStack;

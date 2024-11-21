@@ -1,7 +1,7 @@
 package cn.anecansaitin.hitboxapi.api.common.collider;
 
 import cn.anecansaitin.hitboxapi.common.collider.BoxPoseStack;
-import cn.anecansaitin.hitboxapi.common.collider.OBB;
+import cn.anecansaitin.hitboxapi.common.collider.basic.OBB;
 import org.joml.Intersectionf;
 import org.joml.Vector3f;
 
@@ -11,7 +11,8 @@ public final class ColliderUtil {
     /**
      * 判断两个碰撞箱是否相交<br/>
      * <br/>
-     * 适用于碰撞箱处于不同的坐标系中，例如A、B实体存在以实体自身为中心的碰撞箱，此时需要使用坐标变换栈将碰撞箱转换为世界坐标。
+     * 适用于碰撞箱处于不同的坐标系中，例如A、B实体存在以实体自身为中心的碰撞箱，
+     * 此时需要使用坐标变换栈将碰撞箱转换为世界坐标。
      *
      * <pre>{@code
      *      Entity A = ...;
@@ -34,11 +35,15 @@ public final class ColliderUtil {
      *
      * @param collision      任意碰撞箱
      * @param poseStack      碰撞箱坐标变换栈
+     * @param entity1        碰撞箱附加实体
+     * @param data1          碰撞箱附加数据
      * @param other          另一个碰撞箱
      * @param otherPoseStack 另一个碰撞箱坐标变换栈
+     * @param entity2        另一个碰撞箱附加实体
+     * @param data2          另一个碰撞箱附加数据
      * @return 相交返回true
      */
-    public static boolean isColliding(ICollider<?, ?> collision, BoxPoseStack poseStack, ICollider<?, ?> other, BoxPoseStack otherPoseStack) {
+    public static <T1, D1, T2, D2> boolean isColliding(ICollider<T1, D1> collision, BoxPoseStack poseStack, T1 entity1, D1 data1, ICollider<T2, D2> other, BoxPoseStack otherPoseStack, T2 entity2, D2 data2) {
         if (other == null) return false;
         if (collision.disable() || other.disable()) return false;
         if (other == collision) return true;
@@ -46,64 +51,63 @@ public final class ColliderUtil {
         collision.prepareColliding(poseStack);
         other.prepareColliding(otherPoseStack);
 
-        switch (collision.getType()) {
-            case OBB -> {
-                return switch (other.getType()) {
-                    case OBB -> isColliding((IOBB<?, ?>) collision, (IOBB<?, ?>) other);
-                    case SPHERE -> isColliding((ISphere<?, ?>) other, (IOBB<?, ?>) collision);
-                    case CAPSULE -> isColliding((ICapsule<?, ?>) other, (IOBB<?, ?>) collision);
-                    case AABB -> isColliding((IOBB<?, ?>) collision, new OBB<>((IAABB<?, ?>) other));
-                    case RAY -> isColliding((IRay<?, ?>) other, (IOBB<?, ?>) collision);
-                    case COMPOSITE -> isColliding((IComposite<?, ?>) other, collision);
-                };
-            }
-            case SPHERE -> {
-                return switch (other.getType()) {
-                    case OBB -> isColliding((ISphere<?, ?>) collision, (IOBB<?, ?>) other);
-                    case SPHERE -> isColliding((ISphere<?, ?>) collision, (ISphere<?, ?>) other);
-                    case CAPSULE -> isColliding((ICapsule<?, ?>) other, (ISphere<?, ?>) collision);
-                    case AABB -> isColliding((ISphere<?, ?>) collision, (IAABB<?, ?>) other);
-                    case RAY -> isColliding((IRay<?, ?>) other, (ISphere<?, ?>) collision);
-                    case COMPOSITE -> isColliding((IComposite<?, ?>) other, collision);
-                };
-            }
-            case CAPSULE -> {
-                return switch (other.getType()) {
-                    case OBB -> isColliding((ICapsule<?, ?>) collision, (IOBB<?, ?>) other);
-                    case SPHERE -> isColliding((ICapsule<?, ?>) collision, (ISphere<?, ?>) other);
-                    case CAPSULE -> isColliding((ICapsule<?, ?>) collision, (ICapsule<?, ?>) other);
-                    case AABB -> isColliding((ICapsule<?, ?>) collision, (IAABB<?, ?>) other);
-                    case RAY -> isColliding((IRay<?, ?>) other, (ICapsule<?, ?>) collision);
-                    case COMPOSITE -> isColliding((IComposite<?, ?>) other, collision);
-                };
-            }
-            case AABB -> {
-                return switch (other.getType()) {
-                    case OBB -> isColliding((IOBB<?, ?>) other, new OBB<>((IAABB<?, ?>) collision));
-                    case SPHERE -> isColliding((ISphere<?, ?>) other, (IAABB<?, ?>) collision);
-                    case CAPSULE -> isColliding((ICapsule<?, ?>) other, (IAABB<?, ?>) collision);
-                    case AABB -> isColliding((IAABB<?, ?>) collision, (IAABB<?, ?>) other);
-                    case RAY -> isColliding((IRay<?, ?>) other, (IAABB<?, ?>) collision);
-                    case COMPOSITE -> isColliding((IComposite<?, ?>) other, collision);
-                };
-            }
-            case RAY -> {
-                return switch (other.getType()) {
-                    case OBB -> isColliding((IRay<?, ?>) collision, (IOBB<?, ?>) other);
-                    case SPHERE -> isColliding((IRay<?, ?>) collision, (ISphere<?, ?>) other);
-                    case CAPSULE -> isColliding((IRay<?, ?>) collision, (ICapsule<?, ?>) other);
-                    case AABB -> isColliding((IRay<?, ?>) collision, (IAABB<?, ?>) other);
-                    case RAY -> isColliding((IRay<?, ?>) collision, (IRay<?, ?>) other);
-                    case COMPOSITE -> isColliding((IComposite<?, ?>) other, collision);
-                };
-            }
-            case COMPOSITE -> {
-                return isColliding((IComposite<?, ?>) collision, other);
-            }
-            default -> {
-                return false;
-            }
+        boolean result = switch (collision.getType()) {
+            case OBB -> switch (other.getType()) {
+                case OBB -> isColliding((IOBB<T1, D1>) collision, (IOBB<T2, D2>) other);
+                case SPHERE -> isColliding((ISphere<T2, D2>) other, (IOBB<T1, D1>) collision);
+                case CAPSULE -> isColliding((ICapsule<T2, D2>) other, (IOBB<T1, D1>) collision);
+                case AABB -> isColliding((IOBB<T1, D1>) collision, new OBB<>((IAABB<T2, D2>) other));
+                case RAY -> isColliding((IRay<T2, D2>) other, (IOBB<T1, D1>) collision);
+                case COMPOSITE ->
+                        isColliding((IComposite<T2, D2>) other, otherPoseStack, entity2, data2, collision, poseStack, entity1, data1);
+            };
+            case SPHERE -> switch (other.getType()) {
+                case OBB -> isColliding((ISphere<T1, D1>) collision, (IOBB<T2, D2>) other);
+                case SPHERE -> isColliding((ISphere<T1, D1>) collision, (ISphere<T2, D2>) other);
+                case CAPSULE -> isColliding((ICapsule<T2, D2>) other, (ISphere<T1, D1>) collision);
+                case AABB -> isColliding((ISphere<T1, D1>) collision, (IAABB<T2, D2>) other);
+                case RAY -> isColliding((IRay<T2, D2>) other, (ISphere<T1, D1>) collision);
+                case COMPOSITE ->
+                        isColliding((IComposite<T2, D2>) other, otherPoseStack, entity2, data2, collision, poseStack, entity1, data1);
+            };
+            case CAPSULE -> switch (other.getType()) {
+                case OBB -> isColliding((ICapsule<T1, D1>) collision, (IOBB<T2, D2>) other);
+                case SPHERE -> isColliding((ICapsule<T1, D1>) collision, (ISphere<T2, D2>) other);
+                case CAPSULE -> isColliding((ICapsule<T1, D1>) collision, (ICapsule<T2, D2>) other);
+                case AABB -> isColliding((ICapsule<T1, D1>) collision, (IAABB<T2, D2>) other);
+                case RAY -> isColliding((IRay<T2, D2>) other, (ICapsule<T1, D1>) collision);
+                case COMPOSITE ->
+                        isColliding((IComposite<T2, D2>) other, otherPoseStack, entity2, data2, collision, poseStack, entity1, data1);
+
+            };
+            case AABB -> switch (other.getType()) {
+                case OBB -> isColliding((IOBB<T2, D2>) other, new OBB<>((IAABB<T1, D1>) collision));
+                case SPHERE -> isColliding((ISphere<T2, D2>) other, (IAABB<T1, D1>) collision);
+                case CAPSULE -> isColliding((ICapsule<T2, D2>) other, (IAABB<T1, D1>) collision);
+                case AABB -> isColliding((IAABB<T1, D1>) collision, (IAABB<T2, D2>) other);
+                case RAY -> isColliding((IRay<T2, D2>) other, (IAABB<T1, D1>) collision);
+                case COMPOSITE ->
+                        isColliding((IComposite<T2, D2>) other, otherPoseStack, entity2, data2, collision, poseStack, entity1, data1);
+            };
+            case RAY -> switch (other.getType()) {
+                case OBB -> isColliding((IRay<T1, D1>) collision, (IOBB<T2, D2>) other);
+                case SPHERE -> isColliding((IRay<T1, D1>) collision, (ISphere<T2, D2>) other);
+                case CAPSULE -> isColliding((IRay<T1, D1>) collision, (ICapsule<T2, D2>) other);
+                case AABB -> isColliding((IRay<T1, D1>) collision, (IAABB<T2, D2>) other);
+                case RAY -> isColliding((IRay<T1, D1>) collision, (IRay<T2, D2>) other);
+                case COMPOSITE ->
+                        isColliding((IComposite<T2, D2>) other, otherPoseStack, entity2, data2, collision, poseStack, entity1, data1);
+            };
+            case COMPOSITE ->
+                    isColliding((IComposite<T1, D1>) collision, poseStack, entity1, data1, other, otherPoseStack, entity2, data2);
+        };
+
+        if (result && collision.getType() != ColliderTyep.COMPOSITE && other.getType() != ColliderTyep.COMPOSITE) {
+            collision.onCollide(entity1, entity2, other, data1);
+            other.onCollide(entity2, entity1, collision, data2);
         }
+
+        return result;
     }
 
     /**
@@ -125,8 +129,8 @@ public final class ColliderUtil {
      * @param other     另一个碰撞箱
      * @return 相交返回true
      */
-    public static boolean isColliding(ICollider<?, ?> collision, ICollider<?, ?> other) {
-        return isColliding(collision, EMPTY_POSE_STACK, other, EMPTY_POSE_STACK);
+    public static <T1, D1, T2, D2> boolean isColliding(ICollider<T1, D1> collision, T1 entity1, D1 data1, ICollider<T2, D2> other, T2 entity2, D2 data2) {
+        return isColliding(collision, EMPTY_POSE_STACK, entity1, data1, other, EMPTY_POSE_STACK, entity2, data2);
     }
 
     /**
@@ -595,25 +599,6 @@ public final class ColliderUtil {
     }
 
     /**
-     * 判断复合碰撞箱与其他碰撞体是否碰撞
-     *
-     * @param composite 复合碰撞箱
-     * @param other     其他碰撞体
-     * @return 有碰撞返回true
-     */
-    public static boolean isColliding(IComposite<?, ?> composite, ICollider<?, ?> other) {
-        int count = composite.getCollidersCount();
-
-        for (int i = 0; i < count; i++) {
-            if (other.isColliding(composite.getCollider(i))) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * 判断两个AABB盒是否碰撞
      *
      * @param aabb  AABB盒
@@ -622,5 +607,24 @@ public final class ColliderUtil {
      */
     public static boolean isColliding(IAABB<?, ?> aabb, IAABB<?, ?> other) {
         return Intersectionf.testAabAab(aabb.getGlobalMin(), aabb.getGlobalMax(), other.getGlobalMin(), other.getGlobalMax());
+    }
+
+    /**
+     * 判断复合碰撞箱与其他碰撞体是否碰撞
+     *
+     * @param composite 复合碰撞箱
+     * @param other     其他碰撞体
+     * @return 有碰撞返回true
+     */
+    public static <T1, D1, T2, D2> boolean isColliding(IComposite<T1, D1> composite, BoxPoseStack poseStack, T1 entity1, D1 data1, ICollider<T2, D2> other, BoxPoseStack otherPoseStack, T2 entity2, D2 data2) {
+        int count = composite.getCollidersCount();
+
+        for (int i = 0; i < count; i++) {
+            if (isColliding(composite.getCollider(i), poseStack, entity1, data1, other, otherPoseStack, entity2, data2)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

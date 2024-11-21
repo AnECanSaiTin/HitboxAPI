@@ -14,4 +14,8 @@ public interface IEntityColliderHolder {
     Map<String, ICollider<Entity, Void>> getHitBox();
 
     BoxPoseStack getPoseStack();
+
+    void markDirty();
+
+    void updatePoseStack(Entity entity);
 }

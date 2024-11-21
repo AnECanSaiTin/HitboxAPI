@@ -18,14 +18,6 @@ import javax.annotation.Nullable;
 /// @param <T> 所依附的实体类型
 /// @param <D> 碰撞时传入的额外数据类型
 public interface ICollider<T, D> {
-    default boolean isColliding(BoxPoseStack poseStack, ICollider<?, ?> other, BoxPoseStack otherPoseStack) {
-        return ColliderUtil.isColliding(this, poseStack, other, otherPoseStack);
-    }
-
-    default boolean isColliding(ICollider<?, ?> other) {
-        return ColliderUtil.isColliding(this, other);
-    }
-
     /**
      * 当与其他碰撞体发生碰撞时调用
      *

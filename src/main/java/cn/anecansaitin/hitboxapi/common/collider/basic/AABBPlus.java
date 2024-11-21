@@ -1,16 +1,17 @@
-package cn.anecansaitin.hitboxapi.common.collider;
+package cn.anecansaitin.hitboxapi.common.collider.basic;
 
 import cn.anecansaitin.hitboxapi.api.common.collider.IAABB;
+import cn.anecansaitin.hitboxapi.common.collider.BoxPoseStack;
 import net.minecraft.world.phys.AABB;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class AABBPlus<T, D> implements IAABB<T, D> {
-    private final Vector3f halfExtents;
-    private final Vector3f center;
-    private final Vector3f globalCenter = new Vector3f();
-    private final Vector3f globalMin = new Vector3f();
-    private final Vector3f globalMax = new Vector3f();
+    public final Vector3f halfExtents;
+    public final Vector3f center;
+    public final Vector3f globalCenter = new Vector3f();
+    public final Vector3f globalMin = new Vector3f();
+    public final Vector3f globalMax = new Vector3f();
     public boolean isDirty;
     private boolean disable;
 
