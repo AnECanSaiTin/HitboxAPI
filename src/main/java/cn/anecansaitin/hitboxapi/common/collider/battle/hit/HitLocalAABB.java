@@ -1,7 +1,8 @@
 package cn.anecansaitin.hitboxapi.common.collider.battle.hit;
 
 import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHitCollider;
-import cn.anecansaitin.hitboxapi.common.collider.basic.Capsule;
+import cn.anecansaitin.hitboxapi.api.common.collider.local.ICoordinateConverter;
+import cn.anecansaitin.hitboxapi.common.collider.local.LocalAABB;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -11,17 +12,15 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.UnknownNullability;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public class HitCapsule extends Capsule<Entity, Void> implements IHitCollider, INBTSerializable<CompoundTag> {
-    public float damage;
-    public ResourceKey<DamageType> damageType;
+public class HitLocalAABB extends LocalAABB<Entity, Void> implements IHitCollider {
+    private float damage;
+    private ResourceKey<DamageType> damageType;
 
-    public HitCapsule(float damage, ResourceKey<DamageType> damageType, Vector3f localCenter, float radius, float height, Quaternionf localRotation) {
-        super(localCenter, radius, height, localRotation);
+    public HitLocalAABB(float damage, ResourceKey<DamageType> damageType, Vector3f center, Vector3f halfExtents, ICoordinateConverter parent) {
+        super(center, halfExtents, parent);
         this.damage = damage;
         this.damageType = damageType;
     }
@@ -38,16 +37,18 @@ public class HitCapsule extends Capsule<Entity, Void> implements IHitCollider, I
 
     @Override
     public @UnknownNullability CompoundTag serializeNBT(HolderLookup.Provider provider) {
-        CompoundTag tag = new CompoundTag();
-        ListTag listTag = new ListTag();
-        tag.put("0", listTag);
         Vector3f center = getLocalCenter();
-        listTag.add(FloatTag.valueOf(center.x));
-        listTag.add(FloatTag.valueOf(center.y));
-        listTag.add(FloatTag.valueOf(center.z));
-        listTag.add(FloatTag.valueOf(getHeight()));
-        listTag.add(FloatTag.valueOf(getRadius()));
-        listTag.add(FloatTag.valueOf(damage));
+        Vector3f halfExtents = getHalfExtents();
+        CompoundTag tag = new CompoundTag();
+        ListTag list = new ListTag();
+        tag.put("0", list);
+        list.add(FloatTag.valueOf(center.x));
+        list.add(FloatTag.valueOf(center.y));
+        list.add(FloatTag.valueOf(center.z));
+        list.add(FloatTag.valueOf(halfExtents.x));
+        list.add(FloatTag.valueOf(halfExtents.y));
+        list.add(FloatTag.valueOf(halfExtents.z));
+        list.add(FloatTag.valueOf(damage));
         tag.putString("1", damageType.location().toString());
         return tag;
     }
@@ -56,9 +57,8 @@ public class HitCapsule extends Capsule<Entity, Void> implements IHitCollider, I
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         ListTag list = nbt.getList("0", FloatTag.TAG_FLOAT);
         getLocalCenter().set(list.getFloat(0), list.getFloat(1), list.getFloat(2));
-        height = list.getFloat(3);
-        radius = list.getFloat(4);
-        damage = list.getFloat(5);
+        getHalfExtents().set(list.getFloat(3), list.getFloat(4), list.getFloat(5));
+        damage = list.getFloat(6);
         damageType = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.parse(nbt.getString("1")));
     }
 }

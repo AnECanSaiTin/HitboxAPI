@@ -1,48 +1,18 @@
 package cn.anecansaitin.hitboxapi.common.collider.basic;
 
 import cn.anecansaitin.hitboxapi.api.common.collider.IRay;
-import cn.anecansaitin.hitboxapi.common.collider.BoxPoseStack;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class Ray<T, D> implements IRay<T, D> {
-    public final Vector3f localOrigin; // 射线的起点
-    public final Vector3f globalOrigin; // 射线的起点
-    public final Vector3f localDirection;
-    public final Vector3f globalDirection;
-    public float length; // 射线的长度
+    private float length;
+    private final Vector3f origin;
+    private final Vector3f direction;
+    private boolean disable;
 
-    public boolean disable;
-
-    public Ray(Vector3f LocalOrigin, Vector3f localDirection, float length) {
-        this.localOrigin = LocalOrigin;
-        this.globalOrigin = new Vector3f(LocalOrigin);
-        this.localDirection = localDirection.normalize();
-        this.globalDirection = new Vector3f(localDirection);
+    public Ray(Vector3f origin, float length, Vector3f direction) {
+        this.origin = origin;
         this.length = length;
-    }
-
-    @Override
-    public void prepareColliding(BoxPoseStack poseStack) {
-        if (!poseStack.isDirty()) {
-            return;
-        }
-
-        BoxPoseStack.Pose pose = poseStack.last();
-        Vector3f posOffset = pose.position;
-        Quaternionf rotOffset = pose.rotation;
-        rotOffset.transform(this.localOrigin, globalOrigin).add(posOffset);
-        rotOffset.transform(this.localDirection, globalDirection);
-    }
-
-    @Override
-    public boolean disable() {
-        return disable;
-    }
-
-    @Override
-    public void setDisable(boolean disable) {
-        this.disable = disable;
+        this.direction = direction;
     }
 
     @Override
@@ -51,22 +21,47 @@ public class Ray<T, D> implements IRay<T, D> {
     }
 
     @Override
-    public Vector3f getLocalOrigin() {
-        return localOrigin;
+    public void setLength(float length) {
+        this.length = length;
     }
 
     @Override
-    public Vector3f getLocalDirection() {
-        return localDirection;
+    public Vector3f getOrigin() {
+        return origin;
     }
 
     @Override
-    public Vector3f getGlobalOrigin() {
-        return globalOrigin;
+    public Vector3f getEnd() {
+        return new Vector3f(origin).add(direction.mul(length));
     }
 
     @Override
-    public Vector3f getGlobalDirection() {
-        return globalDirection;
+    public Vector3f getDirection() {
+        return direction;
+    }
+
+    @Override
+    public void setDirection(Vector3f direction) {
+        this.direction.set(direction);
+    }
+
+    @Override
+    public void setDisable(boolean disable) {
+        this.disable = disable;
+    }
+
+    @Override
+    public boolean disable() {
+        return disable;
+    }
+
+    @Override
+    public String toString() {
+        return "Ray{" +
+                "length=" + length +
+                ", origin=" + origin +
+                ", direction=" + direction +
+                ", disable=" + disable +
+                '}';
     }
 }

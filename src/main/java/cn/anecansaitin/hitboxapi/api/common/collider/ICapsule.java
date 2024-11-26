@@ -1,30 +1,41 @@
 package cn.anecansaitin.hitboxapi.api.common.collider;
 
-import cn.anecansaitin.hitboxapi.client.collider.render.CapsuleRender;
-import cn.anecansaitin.hitboxapi.api.client.collider.ICollisionRender;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+/// 胶囊体碰撞箱
+///
+/// 性能优于OBB碰撞箱
 public interface ICapsule<T, D> extends ICollider<T, D> {
+    /// @return 高度
     float getHeight();
 
+    /// 设置高度
+    void setHeight(float height);
+
+    /// @return 半径
     float getRadius();
 
-    Vector3f getLocalCenter();
+    /// 设置半径
+    void setRadius(float radius);
 
-    Quaternionf getLocalRotation();
+    /// @return 中心点
+    Vector3f getCenter();
 
-    Vector3f getGlobalDirection();
+    /// 设置中心点
+    void setCenter(Vector3f center);
 
-    Vector3f getGlobalCenter();
+    /// @return 旋转
+    Quaternionf getRotation();
+
+    /// 设置旋转
+    void setRotation(Quaternionf rotation);
+
+    /// @return 方向向量
+    Vector3f getDirection();
 
     @Override
     default ColliderTyep getType() {
         return ColliderTyep.CAPSULE;
-    }
-
-    @Override
-    default ICollisionRender getRenderer() {
-        return CapsuleRender.INSTANCE;
     }
 }

@@ -1,34 +1,36 @@
 package cn.anecansaitin.hitboxapi.common.collider.basic;
 
 import cn.anecansaitin.hitboxapi.api.common.collider.ISphere;
-import cn.anecansaitin.hitboxapi.common.collider.BoxPoseStack;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class Sphere<T, D> implements ISphere<T, D> {
-    public static final Sphere<?, ?> EMPTY = new Sphere<>(new Vector3f(), 0);
-    public float radius;
-    public final Vector3f localCenter;
-    public final Vector3f globalCenter;
+    private float radius;
+    private final Vector3f center;
+    private boolean disable;
 
-    public boolean disable;
-
-    public Sphere(Vector3f localCenter, float radius) {
-        this.localCenter = localCenter;
-        this.globalCenter = new Vector3f(localCenter);
+    public Sphere(Vector3f center, float radius) {
+        this.center = center;
         this.radius = radius;
     }
 
     @Override
-    public void prepareColliding(BoxPoseStack poseStack) {
-        if (!poseStack.isDirty()) {
-            return;
-        }
+    public float getRadius() {
+        return radius;
+    }
 
-        BoxPoseStack.Pose pose = poseStack.last();
-        Vector3f posOffset = pose.position;
-        Quaternionf rotOffset = pose.rotation;
-        rotOffset.transform(this.localCenter, globalCenter).add(posOffset);
+    @Override
+    public void setRadius(float radius) {
+        this.radius = radius;
+    }
+
+    @Override
+    public Vector3f getCenter() {
+        return center;
+    }
+
+    @Override
+    public void setCenter(Vector3f center) {
+        this.center.set(center);
     }
 
     @Override
@@ -42,17 +44,11 @@ public class Sphere<T, D> implements ISphere<T, D> {
     }
 
     @Override
-    public float getRadius() {
-        return radius;
-    }
-
-    @Override
-    public Vector3f getLocalCenter() {
-        return localCenter;
-    }
-
-    @Override
-    public Vector3f getGlobalCenter() {
-        return globalCenter;
+    public String toString() {
+        return "Sphere{" +
+                "radius=" + radius +
+                ", center=" + center +
+                ", disable=" + disable +
+                '}';
     }
 }

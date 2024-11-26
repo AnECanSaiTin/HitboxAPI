@@ -1,35 +1,29 @@
 package cn.anecansaitin.hitboxapi.api.common.collider;
 
-import cn.anecansaitin.hitboxapi.api.client.collider.ICollisionRender;
-import cn.anecansaitin.hitboxapi.client.collider.render.RayRender;
 import org.joml.Vector3f;
 
+/// 射线碰撞箱
 public interface IRay<T, D> extends ICollider<T, D> {
+    /// 长度
     float getLength();
 
-    Vector3f getLocalOrigin();
+    /// 设置长度
+    void setLength(float length);
 
-    Vector3f getLocalDirection();
+    /// 起点
+    Vector3f getOrigin();
 
-    Vector3f getGlobalOrigin();
+    /// 终点
+    Vector3f getEnd();
 
-    Vector3f getGlobalDirection();
+    /// 方向
+    Vector3f getDirection();
 
-    default Vector3f getLocalEnd() {
-        return getLocalDirection().mul(getLength(), new Vector3f()).add(getLocalOrigin());
-    }
-
-    default Vector3f getGlobalEnd() {
-        return getGlobalDirection().mul(getLength(), new Vector3f()).add(getGlobalOrigin());
-    }
+    /// 设置方向
+    void setDirection(Vector3f direction);
 
     @Override
     default ColliderTyep getType() {
         return ColliderTyep.RAY;
-    }
-
-    @Override
-    default ICollisionRender getRenderer() {
-        return RayRender.INSTANCE;
     }
 }

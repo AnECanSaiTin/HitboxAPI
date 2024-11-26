@@ -4,17 +4,14 @@ import cn.anecansaitin.hitboxapi.HitboxApi;
 import cn.anecansaitin.hitboxapi.api.common.collider.ColliderUtil;
 import cn.anecansaitin.hitboxapi.common.HitboxDataAttachments;
 import cn.anecansaitin.hitboxapi.api.common.attachment.IEntityColliderHolder;
-import cn.anecansaitin.hitboxapi.common.collider.BoxPoseStack;
 import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
-import org.joml.Vector3f;
 
 import java.util.Collection;
 import java.util.List;
@@ -53,7 +50,7 @@ public class LevelTick {
         Collection<ICollider<Entity, Void>> hitBoxValues = hitBox.values();
 
         //更新坐标变换栈
-        entityColliderHolder.updatePoseStack(entity);
+        entityColliderHolder.getCoordinateConverter().update();
 
         //todo 如何判断检测的范围
         List<Entity> entities = entity.level().getEntities(entity, entity.getBoundingBox().inflate(5));
@@ -72,11 +69,11 @@ public class LevelTick {
             // 没有受击盒则跳过
             if (hurtBox.isEmpty()) continue;
 
-            enemyColliderHolder.updatePoseStack(enemy);
+            enemyColliderHolder.getCoordinateConverter().update();
 
             for (ICollider<Entity, Void> hit : hitBoxValues) {
                 for (ICollider<Entity, Void> hurt : hurtBox.values()) {
-                    if (!ColliderUtil.isColliding(hit, entityColliderHolder.getPoseStack(), entity, null, hurt, enemyColliderHolder.getPoseStack(), enemy, null)) {
+                    if (!ColliderUtil.colliding(hit, entity, null, hurt, enemy, null)) {
                         continue;
                     }
 

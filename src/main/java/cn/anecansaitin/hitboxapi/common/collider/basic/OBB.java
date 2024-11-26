@@ -1,82 +1,88 @@
 package cn.anecansaitin.hitboxapi.common.collider.basic;
 
-import cn.anecansaitin.hitboxapi.api.common.collider.IAABB;
 import cn.anecansaitin.hitboxapi.api.common.collider.IOBB;
-import cn.anecansaitin.hitboxapi.common.collider.BoxPoseStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class OBB<T, D> implements IOBB<T, D> {
-    public final Vector3f halfExtents;
-    public final Vector3f localCenter;
-    public final Quaternionf localRotation;
-    public final Vector3f[] globalVertices = new Vector3f[8];
-    public final Vector3f[] globalAxes = new Vector3f[3];
-    public final Vector3f globalCenter;
+    private final Vector3f halfExtents;
+    private final Vector3f center;
+    private final Quaternionf rotation;
+    private boolean disable;
 
-    public boolean disable;
-    private boolean isDirty;
-
-    public OBB(Vector3f localCenter, Vector3f halfExtents, Quaternionf localRotation) {
-        globalAxes[0] = new Vector3f(1, 0, 0);
-        globalAxes[1] = new Vector3f(0, 1, 0);
-        globalAxes[2] = new Vector3f(0, 0, 1);
-
-        for (int i = 0; i < globalVertices.length; i++) {
-            globalVertices[i] = new Vector3f();
-        }
-
-        this.localCenter = localCenter;
-        this.globalCenter = new Vector3f(localCenter);
+    public OBB(Vector3f halfExtents, Vector3f center, Quaternionf rotation) {
         this.halfExtents = halfExtents;
-        this.localRotation = localRotation;
-        isDirty = true;
-    }
-
-    public OBB(IAABB<T, D> aabb) {
-        this(new Vector3f(aabb.getGlobalCenter()), new Vector3f(aabb.getHalfExtents()), new Quaternionf());
-    }
-
-    private void update(BoxPoseStack poseStack) {
-        BoxPoseStack.Pose pose = poseStack.last();
-        Vector3f posOffset = pose.position;
-        Quaternionf rotOffset = pose.rotation;
-        Vector3f center = rotOffset.transform(this.localCenter, globalCenter).add(posOffset);
-        Quaternionf rotation = rotOffset.mul(this.localRotation, new Quaternionf());
-
-        // 旋转轴向
-        globalAxes[0].set(1, 0, 0);
-        globalAxes[1].set(0, 1, 0);
-        globalAxes[2].set(0, 0, 1);
-
-
-        for (Vector3f axe : globalAxes) {
-            rotation.transform(axe);
-        }
-
-        Vector3f v = new Vector3f();
-
-        // 计算顶点
-        globalVertices[0].set(center).add(globalAxes[0].mul(halfExtents.x, v)).add(globalAxes[1].mul(halfExtents.y, v)).add(globalAxes[2].mul(halfExtents.z, v));
-        globalVertices[1].set(center).add(globalAxes[0].mul(halfExtents.x, v)).add(globalAxes[1].mul(halfExtents.y, v)).sub(globalAxes[2].mul(halfExtents.z, v));
-        globalVertices[2].set(center).add(globalAxes[0].mul(halfExtents.x, v)).sub(globalAxes[1].mul(halfExtents.y, v)).add(globalAxes[2].mul(halfExtents.z, v));
-        globalVertices[3].set(center).add(globalAxes[0].mul(halfExtents.x, v)).sub(globalAxes[1].mul(halfExtents.y, v)).sub(globalAxes[2].mul(halfExtents.z, v));
-        globalVertices[4].set(center).sub(globalAxes[0].mul(halfExtents.x, v)).add(globalAxes[1].mul(halfExtents.y, v)).add(globalAxes[2].mul(halfExtents.z, v));
-        globalVertices[5].set(center).sub(globalAxes[0].mul(halfExtents.x, v)).add(globalAxes[1].mul(halfExtents.y, v)).sub(globalAxes[2].mul(halfExtents.z, v));
-        globalVertices[6].set(center).sub(globalAxes[0].mul(halfExtents.x, v)).sub(globalAxes[1].mul(halfExtents.y, v)).add(globalAxes[2].mul(halfExtents.z, v));
-        globalVertices[7].set(center).sub(globalAxes[0].mul(halfExtents.x, v)).sub(globalAxes[1].mul(halfExtents.y, v)).sub(globalAxes[2].mul(halfExtents.z, v));
-    }
-
-    public void markUpdate() {
-        isDirty = true;
+        this.center = center;
+        this.rotation = rotation;
     }
 
     @Override
-    public void prepareColliding(BoxPoseStack poseStack) {
-        if (isDirty || poseStack.isDirty()) {
-            update(poseStack);
-            isDirty = false;
+    public Vector3f getHalfExtents() {
+        return halfExtents;
+    }
+
+    @Override
+    public void setHalfExtents(Vector3f halfExtents) {
+        this.halfExtents.set(halfExtents);
+    }
+
+    @Override
+    public Vector3f getCenter() {
+        return center;
+    }
+
+    @Override
+    public void setCenter(Vector3f center) {
+        this.center.set(center);
+    }
+
+    @Override
+    public Quaternionf getRotation() {
+        return rotation;
+    }
+
+    @Override
+    public void setRotation(Quaternionf rotation) {
+        this.rotation.set(rotation);
+    }
+
+    @Override
+    public Vector3f[] getVertices() {
+        Vector3f[] vertices = new Vector3f[8];
+
+        // 计算局部坐标系下的顶点位置
+        Vector3f[] localVertices = new Vector3f[]{
+                new Vector3f(-halfExtents.x, -halfExtents.y, -halfExtents.z),
+                new Vector3f(halfExtents.x, -halfExtents.y, -halfExtents.z),
+                new Vector3f(halfExtents.x, halfExtents.y, -halfExtents.z),
+                new Vector3f(-halfExtents.x, halfExtents.y, -halfExtents.z),
+                new Vector3f(-halfExtents.x, -halfExtents.y, halfExtents.z),
+                new Vector3f(halfExtents.x, -halfExtents.y, halfExtents.z),
+                new Vector3f(halfExtents.x, halfExtents.y, halfExtents.z),
+                new Vector3f(-halfExtents.x, halfExtents.y, halfExtents.z)
+        };
+
+        // 将局部坐标系下的顶点转换到世界坐标系
+        for (int i = 0; i < 8; i++) {
+            Vector3f vertex = localVertices[i];
+            vertex.rotate(rotation);
+            vertex.add(center);
+            vertices[i] = vertex;
         }
+
+        return vertices;
+    }
+
+    @Override
+    public Vector3f[] getAxes() {
+        Vector3f[] axes = new Vector3f[]{
+                new Vector3f(1, 0, 0),
+                new Vector3f(0, 1, 0),
+                new Vector3f(0, 0, 1)};
+        rotation.transform(axes[0]);
+        rotation.transform(axes[1]);
+        rotation.transform(axes[2]);
+        return axes;
     }
 
     @Override
@@ -90,32 +96,12 @@ public class OBB<T, D> implements IOBB<T, D> {
     }
 
     @Override
-    public Vector3f getHalfExtents() {
-        return halfExtents;
-    }
-
-    @Override
-    public Vector3f getLocalCenter() {
-        return localCenter;
-    }
-
-    @Override
-    public Quaternionf getLocalRotation() {
-        return localRotation;
-    }
-
-    @Override
-    public Vector3f[] getGlobalVertices() {
-        return globalVertices;
-    }
-
-    @Override
-    public Vector3f[] getGlobalAxes() {
-        return globalAxes;
-    }
-
-    @Override
-    public Vector3f getGlobalCenter() {
-        return globalCenter;
+    public String toString() {
+        return "OBB{" +
+                "halfExtents=" + halfExtents +
+                ", center=" + center +
+                ", rotation=" + rotation +
+                ", disable=" + disable +
+                '}';
     }
 }

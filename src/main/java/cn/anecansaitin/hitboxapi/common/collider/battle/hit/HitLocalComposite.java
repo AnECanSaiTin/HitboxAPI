@@ -1,10 +1,8 @@
 package cn.anecansaitin.hitboxapi.common.collider.battle.hit;
 
-import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
 import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHitCollider;
-import cn.anecansaitin.hitboxapi.common.collider.basic.Composite;
-import it.unimi.dsi.fastutil.Pair;
-import it.unimi.dsi.fastutil.ints.IntObjectImmutablePair;
+import cn.anecansaitin.hitboxapi.api.common.collider.local.ICoordinateConverter;
+import cn.anecansaitin.hitboxapi.common.collider.local.LocalComposite;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -14,20 +12,16 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.UnknownNullability;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class HitComposite extends Composite<Entity, Void> implements IHitCollider {
+public class HitLocalComposite extends LocalComposite<IHitCollider, Entity, Void> implements IHitCollider {
     public float damage;
     public ResourceKey<DamageType> damageType;
 
-    public HitComposite(float damage, ResourceKey<DamageType> damageType, Vector3f position, Quaternionf rotation, List<Pair<String, ICollider<Entity, Void>>> collisions) {
-        super(position, rotation, collisions);
+    public HitLocalComposite(float damage, ResourceKey<DamageType> damageType, Vector3f position, Quaternionf rotation, ICoordinateConverter parent) {
+        super(position, rotation, parent);
         this.damage = damage;
         this.damageType = damageType;
     }
@@ -44,6 +38,8 @@ public class HitComposite extends Composite<Entity, Void> implements IHitCollide
 
     @Override
     public @UnknownNullability CompoundTag serializeNBT(HolderLookup.Provider provider) {
+        Vector3f position = getLocalPosition();
+        Quaternionf rotation = getLocalRotation();
         CompoundTag tag = new CompoundTag();
         ListTag listTag = new ListTag();
         tag.put("0", listTag);
@@ -60,9 +56,9 @@ public class HitComposite extends Composite<Entity, Void> implements IHitCollide
         ListTag boxList = new ListTag();
         tag.put("2", boxList);
 
-        for (int i = 0; i < colliders.length; i++) {
-            IHitCollider collider = (IHitCollider) colliders[i];
-            String name = colliderNames[i];
+        for (int i = 0, length = getCollidersCount(); i < length; i++) {
+            IHitCollider collider = getCollider(i);
+            String name = getColliderName(i);
             byte type = switch (collider.getType()) {
                 case OBB -> 0;
                 case SPHERE -> 1;
@@ -85,15 +81,12 @@ public class HitComposite extends Composite<Entity, Void> implements IHitCollide
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         ListTag list = nbt.getList("0", FloatTag.TAG_FLOAT);
-        position.set(list.getFloat(0), list.getFloat(1), list.getFloat(2));
-        rotation.set(list.getFloat(3), list.getFloat(4), list.getFloat(5), list.getFloat(6));
+        getLocalPosition().set(list.getFloat(0), list.getFloat(1), list.getFloat(2));
+        getLocalRotation().set(list.getFloat(3), list.getFloat(4), list.getFloat(5), list.getFloat(6));
         damage = list.getFloat(7);
         damageType = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.parse(nbt.getString("1")));
         ListTag boxList = nbt.getList("2", CompoundTag.TAG_COMPOUND);
-
-        colliders = new IHitCollider[boxList.size()];
-        colliderNames = new String[boxList.size()];
-        collisionMap.clear();
+        ICoordinateConverter child = getConverter();
 
         for (int i = 0; i < boxList.size(); i++) {
             CompoundTag box = boxList.getCompound(i);
@@ -102,19 +95,17 @@ public class HitComposite extends Composite<Entity, Void> implements IHitCollide
             CompoundTag compound = box.getCompound("2");
 
             IHitCollider collider = switch (type) {
-                case 0 -> new HitOBB(0, null, new Vector3f(), new Vector3f(), new Quaternionf());
-                case 1 -> new HitSphere(0, null, new Vector3f(), 0);
-                case 2 -> new HitCapsule(0, null, new Vector3f(), 0, 0, new Quaternionf());
-                case 3 -> new HitAABB(0, null, new Vector3f(), new Vector3f());
-                case 4 -> new HitRay(0, null, new Vector3f(), new Vector3f(), 0);
-                case 5 -> new HitComposite(0, null, new Vector3f(), new Quaternionf(), new ArrayList<>());
+                case 0 -> new HitLocalOBB(0, null, new Vector3f(), new Vector3f(), new Quaternionf(), child);
+                case 1 -> new HitLocalSphere(0, null, new Vector3f(), 0, child);
+                case 2 -> new HitLocalCapsule(0, null, 0, 0, new Vector3f(), new Quaternionf(), child);
+                case 3 -> new HitLocalAABB(0, null, new Vector3f(), new Vector3f(), child);
+                case 4 -> new HitLocalRay(0, null, new Vector3f(), new Vector3f(), 0, child);
+                case 5 -> new HitLocalComposite(0, null, new Vector3f(), new Quaternionf(), child);
                 default -> throw new IllegalStateException("Unexpected value: " + type);
             };
 
             collider.deserializeNBT(provider, compound);
-            colliders[i] = collider;
-            colliderNames[i] = name;
-            collisionMap.put(name, new IntObjectImmutablePair<>(i, collider));
+            addCollider(name, collider);
         }
     }
 }

@@ -2,10 +2,8 @@ package cn.anecansaitin.hitboxapi.common.attachment;
 
 import cn.anecansaitin.hitboxapi.api.common.attachment.IEntityColliderHolder;
 import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
-import cn.anecansaitin.hitboxapi.common.collider.*;
+import cn.anecansaitin.hitboxapi.common.collider.local.EntityCoordinateConverter;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,8 +19,16 @@ public class EntityColliderHolder implements IEntityColliderHolder {
      */
     public Map<String, ICollider<Entity, Void>> hitBox = new HashMap<>();
 
-    public BoxPoseStack poseStack = new BoxPoseStack();
-    public boolean isDirty = true;
+    public EntityCoordinateConverter converter;
+
+    /// 仅用于注册
+    @Deprecated()
+    public EntityColliderHolder() {
+    }
+
+    public EntityColliderHolder(Entity entity) {
+        converter = new EntityCoordinateConverter(entity);
+    }
 
     @Override
     public Map<String, ICollider<Entity, Void>> getHurtBox() {
@@ -35,33 +41,7 @@ public class EntityColliderHolder implements IEntityColliderHolder {
     }
 
     @Override
-    public BoxPoseStack getPoseStack() {
-        return poseStack;
-    }
-
-    @Override
-    public void markDirty() {
-        isDirty = true;
-    }
-
-    @Override
-    public void updatePoseStack(Entity entity) {
-        BoxPoseStack.Pose pose = getPoseStack().last();
-        Vector3f posePos = pose.position;
-        Vec3 position = entity.position();
-        float x = (float) position.x;
-        float y = (float) position.y;
-        float z = (float) position.z;
-
-        if (!posePos.equals(x, y, z)) {
-            posePos.set(x, y, z);
-            pose.isDirty = true;
-        } else {
-            pose.isDirty = false;
-        }
-
-        if (isDirty) {
-            pose.isDirty = true;
-        }
+    public EntityCoordinateConverter getCoordinateConverter() {
+        return converter;
     }
 }

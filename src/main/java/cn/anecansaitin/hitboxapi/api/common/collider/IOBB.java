@@ -1,31 +1,36 @@
 package cn.anecansaitin.hitboxapi.api.common.collider;
 
-import cn.anecansaitin.hitboxapi.api.client.collider.ICollisionRender;
-import cn.anecansaitin.hitboxapi.client.collider.render.OBBRender;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+/// 有向包围盒OBB
 public interface IOBB<T, D> extends ICollider<T, D> {
+    /// 轴半长
     Vector3f getHalfExtents();
 
-    Vector3f getLocalCenter();
+    /// 设置轴半长
+    void setHalfExtents(Vector3f halfExtents);
 
-    Quaternionf getLocalRotation();
+    /// 中心点
+    Vector3f getCenter();
 
-    Vector3f getGlobalCenter();
+    /// 设置中心点
+    void setCenter(Vector3f center);
 
-    Vector3f[] getGlobalVertices();
+    /// 旋转
+    Quaternionf getRotation();
 
-    Vector3f[] getGlobalAxes();
+    /// 设置旋转
+    void setRotation(Quaternionf rotation);
 
+    /// 顶点
+    Vector3f[] getVertices();
+
+    /// 轴向
+    Vector3f[] getAxes();
 
     @Override
     default ColliderTyep getType() {
         return ColliderTyep.OBB;
-    }
-
-    @Override
-    default ICollisionRender getRenderer() {
-        return OBBRender.INSTANCE;
     }
 }

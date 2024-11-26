@@ -1,7 +1,8 @@
 package cn.anecansaitin.hitboxapi.common.collider.battle.hit;
 
 import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHitCollider;
-import cn.anecansaitin.hitboxapi.common.collider.basic.Sphere;
+import cn.anecansaitin.hitboxapi.api.common.collider.local.ICoordinateConverter;
+import cn.anecansaitin.hitboxapi.common.collider.local.LocalCapsule;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -11,16 +12,16 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.UnknownNullability;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public class HitSphere extends Sphere<Entity, Void> implements IHitCollider, INBTSerializable<CompoundTag> {
+public class HitLocalCapsule extends LocalCapsule<Entity, Void> implements IHitCollider {
     public float damage;
     public ResourceKey<DamageType> damageType;
 
-    public HitSphere(float damage, ResourceKey<DamageType> damageType, Vector3f localCenter, float radius) {
-        super(localCenter, radius);
+    public HitLocalCapsule(float damage, ResourceKey<DamageType> damageType, float height, float radius, Vector3f localCenter, Quaternionf localRotation, ICoordinateConverter parent) {
+        super(height, radius, localCenter, localRotation, parent);
         this.damage = damage;
         this.damageType = damageType;
     }
@@ -40,10 +41,12 @@ public class HitSphere extends Sphere<Entity, Void> implements IHitCollider, INB
         CompoundTag tag = new CompoundTag();
         ListTag listTag = new ListTag();
         tag.put("0", listTag);
-        listTag.add(FloatTag.valueOf(localCenter.x));
-        listTag.add(FloatTag.valueOf(localCenter.y));
-        listTag.add(FloatTag.valueOf(localCenter.z));
-        listTag.add(FloatTag.valueOf(radius));
+        Vector3f center = getLocalCenter();
+        listTag.add(FloatTag.valueOf(center.x));
+        listTag.add(FloatTag.valueOf(center.y));
+        listTag.add(FloatTag.valueOf(center.z));
+        listTag.add(FloatTag.valueOf(getHeight()));
+        listTag.add(FloatTag.valueOf(getRadius()));
         listTag.add(FloatTag.valueOf(damage));
         tag.putString("1", damageType.location().toString());
         return tag;
@@ -52,9 +55,10 @@ public class HitSphere extends Sphere<Entity, Void> implements IHitCollider, INB
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         ListTag list = nbt.getList("0", FloatTag.TAG_FLOAT);
-        localCenter.set(list.getFloat(0), list.getFloat(1), list.getFloat(2));
-        radius = list.getFloat(3);
-        damage = list.getFloat(4);
+        getLocalCenter().set(list.getFloat(0), list.getFloat(1), list.getFloat(2));
+        setHeight(list.getFloat(3));
+        setRadius(list.getFloat(4));
+        damage = list.getFloat(5);
         damageType = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.parse(nbt.getString("1")));
     }
 }

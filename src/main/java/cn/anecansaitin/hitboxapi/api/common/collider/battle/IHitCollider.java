@@ -1,6 +1,7 @@
 package cn.anecansaitin.hitboxapi.api.common.collider.battle;
 
 import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
+import cn.anecansaitin.hitboxapi.api.common.collider.local.ILocalCollider;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.damagesource.DamageSources;
@@ -9,7 +10,7 @@ import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.Nullable;
 
-public interface IHitCollider extends ICollider<Entity, Void>, INBTSerializable<CompoundTag> {
+public interface IHitCollider extends ILocalCollider<Entity, Void>, INBTSerializable<CompoundTag> {
     float getDamage();
 
     ResourceKey<DamageType> getDamageType();

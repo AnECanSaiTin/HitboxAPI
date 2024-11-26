@@ -1,27 +1,31 @@
 package cn.anecansaitin.hitboxapi.api.common.collider;
 
-import cn.anecansaitin.hitboxapi.client.collider.render.AABBRender;
-import cn.anecansaitin.hitboxapi.api.client.collider.ICollisionRender;
 import org.joml.Vector3f;
 
+/// AABB碰撞箱
+///
+/// 区别于原版实现，使用中心点加半长宽高定义。
 public interface IAABB<T, D> extends ICollider<T, D> {
+    /// @return 轴半长
     Vector3f getHalfExtents();
 
-    Vector3f getLocalCenter();
+    /// 设置轴半长
+    void setHalfExtents(Vector3f halfExtents);
 
-    Vector3f getGlobalCenter();
+    /// @return 中心点
+    Vector3f getCenter();
 
-    Vector3f getGlobalMin();
+    /// 设置中心点
+    void setCenter(Vector3f center);
 
-    Vector3f getGlobalMax();
+    /// @return 最小点
+    Vector3f getMin();
+
+    /// @return 最大点
+    Vector3f getMax();
 
     @Override
     default ColliderTyep getType() {
         return ColliderTyep.AABB;
-    }
-
-    @Override
-    default ICollisionRender getRenderer() {
-        return AABBRender.INSTANCE;
     }
 }

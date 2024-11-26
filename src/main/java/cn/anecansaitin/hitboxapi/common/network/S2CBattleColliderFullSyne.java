@@ -9,6 +9,7 @@ import cn.anecansaitin.hitboxapi.common.HitboxDataAttachments;
 import cn.anecansaitin.hitboxapi.common.attachment.EntityColliderHolder;
 import cn.anecansaitin.hitboxapi.common.collider.battle.hit.*;
 import cn.anecansaitin.hitboxapi.common.collider.battle.hurt.*;
+import cn.anecansaitin.hitboxapi.common.collider.local.EntityCoordinateConverter;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -18,29 +19,30 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.stream.Stream;
 
 /**
  * 完整发送整个碰撞箱（仅Battle类型）
  */
-public record S2CBattleColliderFullSyne(int id, IEntityColliderHolder holder) implements CustomPacketPayload {
+public record S2CBattleColliderFullSyne(int id, CompoundTag tag) implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<S2CBattleColliderFullSyne> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(HitboxApi.MODID, "s_2_c_battle_collider_full_syne"));
     private static final HolderLookup.Provider PROVIDER = HolderLookup.Provider.create(Stream.empty());
-
     public static final StreamCodec<ByteBuf, S2CBattleColliderFullSyne> CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT,
             (p) -> p.id,
             ByteBufCodecs.COMPOUND_TAG,
-            (p) -> toNBT(p.holder),
-            (id, nbt) -> new S2CBattleColliderFullSyne(id, fromNBT(nbt))
+            (p) -> p.tag,
+            S2CBattleColliderFullSyne::new
     );
+
+    public S2CBattleColliderFullSyne(int id, IEntityColliderHolder holder) {
+        this(id, toNBT(holder));
+    }
 
     private static CompoundTag toNBT(IEntityColliderHolder holder) {
         CompoundTag tag = new CompoundTag();
@@ -73,7 +75,7 @@ public record S2CBattleColliderFullSyne(int id, IEntityColliderHolder holder) im
 
         ListTag hurt = new ListTag();
 
-        for (Map.Entry<String, ICollider<Entity, Void>> entry : holder.getHitBox().entrySet()) {
+        for (Map.Entry<String, ICollider<Entity, Void>> entry : holder.getHurtBox().entrySet()) {
             ICollider<Entity, Void> value = entry.getValue();
 
             if (!(value instanceof IHurtCollider hurtCollider)) {
@@ -103,8 +105,9 @@ public record S2CBattleColliderFullSyne(int id, IEntityColliderHolder holder) im
         return tag;
     }
 
-    private static IEntityColliderHolder fromNBT(CompoundTag tag) {
-        EntityColliderHolder holder = new EntityColliderHolder();
+    private static IEntityColliderHolder fromNBT(CompoundTag tag, Entity entity) {
+        EntityColliderHolder holder = new EntityColliderHolder(entity);
+        EntityCoordinateConverter child = holder.getCoordinateConverter();
         ListTag hit = tag.getList("0", CompoundTag.TAG_COMPOUND);
 
         for (int i = 0; i < hit.size(); i++) {
@@ -114,12 +117,12 @@ public record S2CBattleColliderFullSyne(int id, IEntityColliderHolder holder) im
             CompoundTag nbt = box.getCompound("2");
 
             IHitCollider hitCollider = switch (type) {
-                case 0 -> new HitOBB(0, null, new Vector3f(), new Vector3f(), new Quaternionf());
-                case 1 -> new HitSphere(0, null, new Vector3f(), 0);
-                case 2 -> new HitCapsule(0, null, new Vector3f(), 0, 0, new Quaternionf());
-                case 3 -> new HitAABB(0, null, new Vector3f(), new Vector3f());
-                case 4 -> new HitRay(0, null, new Vector3f(), new Vector3f(), 0);
-                case 5 -> new HitComposite(0, null, new Vector3f(), new Quaternionf(), new ArrayList<>());
+                case 0 -> new HitLocalOBB(0, null, new Vector3f(), new Vector3f(), new Quaternionf(), child);
+                case 1 -> new HitLocalSphere(0, null, new Vector3f(), 0, child);
+                case 2 -> new HitLocalCapsule(0, null, 0, 0, new Vector3f(), new Quaternionf(), child);
+                case 3 -> new HitLocalAABB(0, null, new Vector3f(), new Vector3f(), child);
+                case 4 -> new HitLocalRay(0, null, new Vector3f(), new Vector3f(), 0, child);
+                case 5 -> new HitLocalComposite(0, null, new Vector3f(), new Quaternionf(), child);
                 default -> throw new IllegalStateException("Unexpected value: " + type);
             };
 
@@ -136,12 +139,12 @@ public record S2CBattleColliderFullSyne(int id, IEntityColliderHolder holder) im
             CompoundTag nbt = box.getCompound("2");
 
             IHurtCollider hurtCollider = switch (type) {
-                case 0 -> new HurtOBB(0, new Vector3f(), new Vector3f(), new Quaternionf());
-                case 1 -> new HurtSphere(0, new Vector3f(), 0);
-                case 2 -> new HurtCapsule(0, new Vector3f(), 0, 0, new Quaternionf());
-                case 3 -> new HurtAABB(0, new Vector3f(), new Vector3f());
-                case 4 -> new HurtRay(0, new Vector3f(), new Vector3f(), 0);
-                case 5 -> new HurtComposite(0, new Vector3f(), new Quaternionf(), new ArrayList<>());
+                case 0 -> new HurtLocalOBB(0, new Vector3f(), new Vector3f(), new Quaternionf(), child);
+                case 1 -> new HurtLocalSphere(0, new Vector3f(), 0, child);
+                case 2 -> new HurtLocalCapsule(0, 0, 0, new Vector3f(), new Quaternionf(), child);
+                case 3 -> new HurtLocalAABB(0, new Vector3f(), new Vector3f(), child);
+                case 4 -> new HurtLocalRay(0, new Vector3f(), new Vector3f(), 0, child);
+                case 5 -> new HurtLocalComposite(0, new Vector3f(), new Quaternionf(), child);
                 default -> throw new IllegalStateException("Unexpected value: " + type);
             };
 
@@ -158,10 +161,11 @@ public record S2CBattleColliderFullSyne(int id, IEntityColliderHolder holder) im
     }
 
     public static void handle(S2CBattleColliderFullSyne payload, IPayloadContext context) {
-        context
+        Entity entity = context
                 .player()
                 .level()
-                .getEntity(payload.id)
-                .setData(HitboxDataAttachments.COLLISION, payload.holder);
+                .getEntity(payload.id);
+
+        entity.setData(HitboxDataAttachments.COLLISION, fromNBT(payload.tag, entity));
     }
 }

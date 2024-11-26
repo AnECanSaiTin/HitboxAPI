@@ -1,6 +1,7 @@
 package cn.anecansaitin.hitboxapi.mixin.client;
 
 import cn.anecansaitin.hitboxapi.api.client.collider.ICollisionRender;
+import cn.anecansaitin.hitboxapi.client.collider.render.*;
 import cn.anecansaitin.hitboxapi.common.HitboxDataAttachments;
 import cn.anecansaitin.hitboxapi.api.common.attachment.IEntityColliderHolder;
 import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
@@ -25,24 +26,30 @@ public abstract class EntityRenderDispatcherMixin {
         if (data.isEmpty()) return;
 
         IEntityColliderHolder holder = data.get();
+        holder.getCoordinateConverter().update();
 
         for (ICollider<Entity, Void> collision : holder.getHurtBox().values()) {
-            hitboxApi$renderCollider(collision, poseStack, buffer, 0, 1, 0, alpha);
+            hitboxApi$renderCollider(entity, collision, poseStack, buffer, 0, 1, 0, alpha);
         }
 
         for (ICollider<Entity, Void> collision : holder.getHitBox().values()) {
-            hitboxApi$renderCollider(collision, poseStack, buffer, 1, 0, 0, alpha);
+            hitboxApi$renderCollider(entity, collision, poseStack, buffer, 1, 0, 0, alpha);
         }
     }
 
     @Unique
-    private static void hitboxApi$renderCollider(ICollider<Entity, Void> collision, PoseStack poseStack, VertexConsumer buffer, float red, float green, float blue, float alpha) {
+    private static void hitboxApi$renderCollider(Entity entity, ICollider<Entity, Void> collision, PoseStack poseStack, VertexConsumer buffer, float red, float green, float blue, float alpha) {
         if (collision.disable()) return;
 
-        ICollisionRender renderer = collision.getRenderer();
+        ICollisionRender<Entity> renderer = switch (collision.getType()){
+            case OBB -> EntityOBBRender.INSTANCE;
+            case SPHERE -> EntitySphereRender.INSTANCE;
+            case CAPSULE -> EntityCapsuleRender.INSTANCE;
+            case AABB -> EntityAABBRender.INSTANCE;
+            case RAY -> EntityRayRender.INSTANCE;
+            case COMPOSITE -> EntityCompositeRender.INSTANCE;
+        };
 
-        if (renderer == null) return;
-
-        renderer.render(collision, poseStack, buffer, red, green, blue, alpha);
+        renderer.render(entity, collision, poseStack, buffer, red, green, blue, alpha);
     }
 }

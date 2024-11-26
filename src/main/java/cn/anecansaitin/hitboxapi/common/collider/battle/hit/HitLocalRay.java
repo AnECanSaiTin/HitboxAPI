@@ -1,7 +1,8 @@
 package cn.anecansaitin.hitboxapi.common.collider.battle.hit;
 
 import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHitCollider;
-import cn.anecansaitin.hitboxapi.common.collider.basic.Ray;
+import cn.anecansaitin.hitboxapi.api.common.collider.local.ICoordinateConverter;
+import cn.anecansaitin.hitboxapi.common.collider.local.LocalRay;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -11,16 +12,15 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.UnknownNullability;
 import org.joml.Vector3f;
 
-public class HitRay extends Ray<Entity, Void> implements IHitCollider, INBTSerializable<CompoundTag> {
+public class HitLocalRay extends LocalRay<Entity, Void> implements IHitCollider {
     public float damage;
     public ResourceKey<DamageType> damageType;
 
-    public HitRay(float damage, ResourceKey<DamageType> damageType, Vector3f LocalOrigin, Vector3f localDirection, float length) {
-        super(LocalOrigin, localDirection, length);
+    public HitLocalRay(float damage, ResourceKey<DamageType> damageType, Vector3f LocalOrigin, Vector3f localDirection, float length, ICoordinateConverter parent) {
+        super(LocalOrigin, localDirection, length, parent);
         this.damage = damage;
         this.damageType = damageType;
     }
@@ -37,15 +37,18 @@ public class HitRay extends Ray<Entity, Void> implements IHitCollider, INBTSeria
 
     @Override
     public @UnknownNullability CompoundTag serializeNBT(HolderLookup.Provider provider) {
+        Vector3f origin = getLocalOrigin();
+        Vector3f direction = getLocalDirection();
+        float length = getLength();
         CompoundTag tag = new CompoundTag();
         ListTag listTag = new ListTag();
         tag.put("0", listTag);
-        listTag.add(FloatTag.valueOf(localOrigin.x));
-        listTag.add(FloatTag.valueOf(localOrigin.y));
-        listTag.add(FloatTag.valueOf(localOrigin.z));
-        listTag.add(FloatTag.valueOf(localDirection.x));
-        listTag.add(FloatTag.valueOf(localDirection.y));
-        listTag.add(FloatTag.valueOf(localDirection.z));
+        listTag.add(FloatTag.valueOf(origin.x));
+        listTag.add(FloatTag.valueOf(origin.y));
+        listTag.add(FloatTag.valueOf(origin.z));
+        listTag.add(FloatTag.valueOf(direction.x));
+        listTag.add(FloatTag.valueOf(direction.y));
+        listTag.add(FloatTag.valueOf(direction.z));
         listTag.add(FloatTag.valueOf(length));
         listTag.add(FloatTag.valueOf(damage));
         tag.putString("1", damageType.location().toString());
@@ -55,9 +58,9 @@ public class HitRay extends Ray<Entity, Void> implements IHitCollider, INBTSeria
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         ListTag list = nbt.getList("0", FloatTag.TAG_FLOAT);
-        localOrigin.set(list.getFloat(0), list.getFloat(1), list.getFloat(2));
-        localDirection.set(list.getFloat(3), list.getFloat(4), list.getFloat(5));
-        length = list.getFloat(6);
+        getLocalOrigin().set(list.getFloat(0), list.getFloat(1), list.getFloat(2));
+        getLocalDirection().set(list.getFloat(3), list.getFloat(4), list.getFloat(5));
+        setLength(list.getFloat(6));
         damage = list.getFloat(7);
         damageType = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.parse(nbt.getString("1")));
     }

@@ -1,23 +1,23 @@
 package cn.anecansaitin.hitboxapi.api.common.collider;
 
-import cn.anecansaitin.hitboxapi.api.client.collider.ICollisionRender;
-import cn.anecansaitin.hitboxapi.client.collider.render.SphereRender;
 import org.joml.Vector3f;
 
+/// 球体碰撞箱
 public interface ISphere<T, D> extends ICollider<T, D> {
+    /// 半径
     float getRadius();
 
-    Vector3f getLocalCenter();
+    /// 设置半径
+    void setRadius(float radius);
 
-    Vector3f getGlobalCenter();
+    /// 中心点
+    Vector3f getCenter();
+
+    /// 设置中心点
+    void setCenter(Vector3f center);
 
     @Override
     default ColliderTyep getType() {
         return ColliderTyep.SPHERE;
-    }
-
-    @Override
-    default ICollisionRender getRenderer() {
-        return SphereRender.INSTANCE;
     }
 }

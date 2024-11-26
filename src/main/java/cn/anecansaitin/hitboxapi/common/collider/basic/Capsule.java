@@ -1,62 +1,21 @@
 package cn.anecansaitin.hitboxapi.common.collider.basic;
 
 import cn.anecansaitin.hitboxapi.api.common.collider.ICapsule;
-import cn.anecansaitin.hitboxapi.common.collider.BoxPoseStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class Capsule<T, D> implements ICapsule<T, D> {
-    public float height;
-    public float radius;
-    public final Vector3f localCenter;
-    public final Quaternionf localRotation;
-    public final Vector3f globalCenter;
-    public final Vector3f globalDirection;
+    private float height;
+    private float radius;
+    private final Vector3f center;
+    private final Quaternionf rotation;
+    private boolean disable;
 
-    public boolean disable;
-    private boolean isDirty;
-
-    public Capsule(Vector3f localCenter, float radius, float height, Quaternionf localRotation) {
-        this.localCenter = localCenter;
-        this.globalCenter = new Vector3f(localCenter);
+    public Capsule(Vector3f center, Quaternionf rotation, float radius, float height) {
+        this.center = center;
+        this.rotation = rotation;
         this.radius = radius;
         this.height = height;
-        this.localRotation = localRotation;
-        globalDirection = new Vector3f(0, 1, 0);
-        localRotation.transform(globalDirection);
-    }
-
-    @Override
-    public void prepareColliding(BoxPoseStack poseStack) {
-        if (isDirty || poseStack.isDirty()) {
-            updateDirection(poseStack);
-            isDirty = false;
-        }
-    }
-
-    @Override
-    public void setDisable(boolean disable) {
-        this.disable = disable;
-    }
-
-    public void markDirty() {
-        isDirty = true;
-    }
-
-    private void updateDirection(BoxPoseStack poseStack) {
-        BoxPoseStack.Pose pose = poseStack.last();
-        Vector3f posOffset = pose.position;
-        Quaternionf rotOffset = pose.rotation;
-        rotOffset.transform(this.localCenter, globalCenter).add(posOffset);
-        Quaternionf rotation = rotOffset.mul(this.localRotation, new Quaternionf());
-
-        globalDirection.set(0, 1, 0);
-        rotation.transform(globalDirection);
-    }
-
-    @Override
-    public boolean disable() {
-        return disable;
     }
 
     @Override
@@ -65,27 +24,63 @@ public class Capsule<T, D> implements ICapsule<T, D> {
     }
 
     @Override
+    public void setHeight(float height) {
+        this.height = height;
+    }
+
+    @Override
     public float getRadius() {
         return radius;
     }
 
     @Override
-    public Vector3f getLocalCenter() {
-        return localCenter;
+    public void setRadius(float radius) {
+        this.radius = radius;
     }
 
     @Override
-    public Quaternionf getLocalRotation() {
-        return localRotation;
+    public Vector3f getCenter() {
+        return center;
     }
 
     @Override
-    public Vector3f getGlobalDirection() {
-        return globalDirection;
+    public void setCenter(Vector3f center) {
+        this.center.set(center);
     }
 
     @Override
-    public Vector3f getGlobalCenter() {
-        return globalCenter;
+    public Quaternionf getRotation() {
+        return rotation;
+    }
+
+    @Override
+    public void setRotation(Quaternionf rotation) {
+        this.rotation.set(rotation);
+    }
+
+    @Override
+    public Vector3f getDirection() {
+        return rotation.transform(new Vector3f(0, 1, 0));
+    }
+
+    @Override
+    public void setDisable(boolean disable) {
+        this.disable = disable;
+    }
+
+    @Override
+    public boolean disable() {
+        return disable;
+    }
+
+    @Override
+    public String toString() {
+        return "Capsule{" +
+                "height=" + height +
+                ", radius=" + radius +
+                ", center=" + center +
+                ", rotation=" + rotation +
+                ", disable=" + disable +
+                '}';
     }
 }
