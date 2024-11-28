@@ -14,7 +14,10 @@ public class LocalCapsule<T, D> implements ILocalCapsule<T, D> {
     private final Quaternionf globalRotation = new Quaternionf();
     private final Vector3f globalDirection = new Vector3f();
     private final ICoordinateConverter parent;
+    /// 0 - 中心点, 1 - 旋转
     private final short[] version = new short[2];
+    /// 0 - 中心点, 1 - 旋转
+    private final boolean[] dirty = new boolean[]{true, true};
     private boolean disable;
 
     public LocalCapsule(float height, float radius, Vector3f localCenter, Quaternionf localRotation, ICoordinateConverter parent) {
@@ -34,6 +37,7 @@ public class LocalCapsule<T, D> implements ILocalCapsule<T, D> {
 
     @Override
     public void setLocalCenter(Vector3f center) {
+        dirty[0] = true;
         this.localCenter.set(center);
     }
 
@@ -44,6 +48,7 @@ public class LocalCapsule<T, D> implements ILocalCapsule<T, D> {
 
     @Override
     public void setLocalRotation(Quaternionf rotation) {
+        dirty[1] = true;
         this.localRotation.set(rotation);
     }
 
@@ -75,13 +80,14 @@ public class LocalCapsule<T, D> implements ILocalCapsule<T, D> {
 
     @Override
     public void setCenter(Vector3f center) {
+        dirty[0] = true;
+        version[0] = parent.positionVersion();
+        version[1] = parent.rotationVersion();
         Vector3f position = parent.getPosition();
         Quaternionf rotation = parent.getRotation().conjugate(new Quaternionf());
 
         localCenter.set(center).sub(position).rotate(rotation);
         globalCenter.set(center);
-        version[0] = parent.positionVersion();
-        version[1] = parent.rotationVersion();
     }
 
     @Override
@@ -92,9 +98,10 @@ public class LocalCapsule<T, D> implements ILocalCapsule<T, D> {
 
     @Override
     public void setRotation(Quaternionf rotation) {
+        dirty[1] = true;
+        version[1] = parent.rotationVersion();
         localRotation.set(rotation).mul(parent.getRotation().conjugate(new Quaternionf()));
         globalRotation.set(rotation);
-        version[1] = parent.rotationVersion();
     }
 
     @Override
@@ -113,17 +120,30 @@ public class LocalCapsule<T, D> implements ILocalCapsule<T, D> {
         return disable;
     }
 
+    protected void setCenterDirty() {
+        dirty[0] = true;
+    }
+
+    protected void setRotationDirty() {
+        dirty[1] = true;
+    }
+
     private void update() {
-        if (parent.positionVersion() == version[0] && parent.rotationVersion() == version[1]) {
-            return;
+        if (parent.rotationVersion() != version[1] || dirty[1]) {
+            dirty[1] = false;
+            Quaternionf rotation = parent.getRotation();
+            rotation.mul(localRotation, globalRotation);
+            globalDirection.set(0, 1, 0).rotate(globalRotation);
+            version[1] = parent.rotationVersion();
         }
 
-        Vector3f position = parent.getPosition();
-        Quaternionf rotation = parent.getRotation();
-        rotation.transform(localCenter, globalCenter).add(position);
-        rotation.mul(localRotation, globalRotation);
-        globalDirection.set(0, 1, 0).rotate(globalRotation);
-        version[0] = parent.positionVersion();
-        version[1] = parent.rotationVersion();
+        if (parent.positionVersion() != version[0] || parent.rotationVersion() != version[1] || dirty[0]) {
+            dirty[0] = false;
+            version[0] = parent.positionVersion();
+            version[1] = parent.rotationVersion();
+            Vector3f position = parent.getPosition();
+            Quaternionf rotation = parent.getRotation();
+            rotation.transform(localCenter, globalCenter).add(position);
+        }
     }
 }

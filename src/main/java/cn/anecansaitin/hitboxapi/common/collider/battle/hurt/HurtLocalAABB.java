@@ -134,6 +134,7 @@ public class HurtLocalAABB extends LocalAABB<Entity, Void> implements IHurtColli
             scale = list.getFloat(index++);
         }
         if ((update & 1 << 1) != 0) {
+            setCenterDirty();
             getLocalCenter().set(list.getFloat(index++), list.getFloat(index++), list.getFloat(index++));
         }
         if ((update & 1 << 2) != 0) {

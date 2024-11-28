@@ -124,9 +124,11 @@ public class HurtLocalOBB extends LocalOBB<Entity, Void> implements IHurtCollide
             scale = list.getFloat(index++);
         }
         if ((update & 1 << 1) != 0) {
+            setCenterDirty();
             getLocalCenter().set(list.getFloat(index++), list.getFloat(index++), list.getFloat(index++));
         }
         if ((update & 1 << 2) != 0) {
+            setRotationDirty();
             getLocalRotation().set(list.getFloat(index++), list.getFloat(index++), list.getFloat(index++), list.getFloat(index++));
         }
         if ((update & 1 << 3) != 0) {

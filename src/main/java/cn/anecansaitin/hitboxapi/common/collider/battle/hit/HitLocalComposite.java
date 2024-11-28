@@ -291,9 +291,11 @@ public class HitLocalComposite extends LocalComposite<IHitCollider, Entity, Void
             damage = list.getFloat(index++);
         }
         if ((update & 1 << 1) != 0) {
+            setPositionDirty();
             getLocalPosition().set(list.getFloat(index++), list.getFloat(index++), list.getFloat(index++));
         }
         if ((update & 1 << 2) != 0) {
+            setRotationDirty();
             getLocalRotation().set(list.getFloat(index++), list.getFloat(index++), list.getFloat(index++), list.getFloat(index));
         }
         if ((update & 1 << 3) != 0) {

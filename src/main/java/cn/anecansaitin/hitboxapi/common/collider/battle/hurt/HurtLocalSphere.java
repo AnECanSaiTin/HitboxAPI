@@ -129,6 +129,7 @@ public class HurtLocalSphere extends LocalSphere<Entity, Void> implements IHurtC
             scale = list.getFloat(index++);
         }
         if ((update & 1 << 1) != 0) {
+            setCenterDirty();
             getLocalCenter().set(list.getFloat(index++), list.getFloat(index++), list.getFloat(index++));
         }
         if ((update & 1 << 2) != 0) {

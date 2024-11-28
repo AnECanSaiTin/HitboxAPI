@@ -186,12 +186,15 @@ public class HitLocalOBB extends LocalOBB<Entity, Void> implements IHitCollider 
             damage = list.getFloat(index++);
         }
         if ((update & 1 << 1) != 0) {
+            setCenterDirty();
             getLocalCenter().set(list.getFloat(index++), list.getFloat(index++), list.getFloat(index++));
         }
         if ((update & 1 << 2) != 0) {
+            setRotationDirty();
             getLocalRotation().set(list.getFloat(index++), list.getFloat(index++), list.getFloat(index++), list.getFloat(index++));
         }
         if ((update & 1 << 3) != 0) {
+            setHalfExtentsDirty();
             getHalfExtents().set(list.getFloat(index++), list.getFloat(index++), list.getFloat(index));
         }
         if ((update & 1 << 4) != 0) {

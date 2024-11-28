@@ -14,7 +14,10 @@ public class LocalOBB<T, D> implements ILocalOBB<T, D> {
     private final Vector3f[] vertices = new Vector3f[8];
     private final Vector3f[] axes = new Vector3f[3];
     private final ICoordinateConverter parent;
+    /// 0 - 中心点, 1 - 旋转
     private final short[] version = new short[2];
+    /// 0 - 中心点, 1 - 旋转, 2 - 轴半长
+    private final boolean[] dirty = new boolean[]{true, true, true};
     private boolean disable;
 
     public LocalOBB(Vector3f halfExtents, Vector3f localCenter, Quaternionf localRotation, ICoordinateConverter parent) {
@@ -41,6 +44,7 @@ public class LocalOBB<T, D> implements ILocalOBB<T, D> {
 
     @Override
     public void setLocalCenter(Vector3f center) {
+        dirty[0] = true;
         this.localCenter.set(center);
     }
 
@@ -51,6 +55,7 @@ public class LocalOBB<T, D> implements ILocalOBB<T, D> {
 
     @Override
     public void setLocalRotation(Quaternionf rotation) {
+        dirty[1] = true;
         this.localRotation.set(rotation);
     }
 
@@ -61,6 +66,7 @@ public class LocalOBB<T, D> implements ILocalOBB<T, D> {
 
     @Override
     public void setHalfExtents(Vector3f halfExtents) {
+        dirty[2] = true;
         this.halfExtents.set(halfExtents);
     }
 
@@ -72,13 +78,13 @@ public class LocalOBB<T, D> implements ILocalOBB<T, D> {
 
     @Override
     public void setCenter(Vector3f center) {
-        Vector3f position = parent.getPosition();
-        Quaternionf rotation = parent.getRotation().conjugate(new Quaternionf());
-
-        localCenter.set(center).sub(position).rotate(rotation);
-        globalCenter.set(center);
+        dirty[0] = true;
         version[0] = parent.positionVersion();
         version[1] = parent.rotationVersion();
+        Vector3f position = parent.getPosition();
+        Quaternionf rotation = parent.getRotation().conjugate(new Quaternionf());
+        localCenter.set(center).sub(position).rotate(rotation);
+        globalCenter.set(center);
     }
 
     @Override
@@ -89,18 +95,21 @@ public class LocalOBB<T, D> implements ILocalOBB<T, D> {
 
     @Override
     public void setRotation(Quaternionf rotation) {
+        dirty[1] = true;
+        version[1] = parent.rotationVersion();
         localRotation.set(rotation).mul(parent.getRotation().conjugate(new Quaternionf()));
         globalRotation.set(rotation);
-        version[1] = parent.rotationVersion();
     }
 
     @Override
     public Vector3f[] getVertices() {
+        update();
         return vertices;
     }
 
     @Override
     public Vector3f[] getAxes() {
+        update();
         return axes;
     }
 
@@ -114,8 +123,22 @@ public class LocalOBB<T, D> implements ILocalOBB<T, D> {
         return disable;
     }
 
+    protected void setCenterDirty() {
+        dirty[0] = true;
+    }
+
+    protected void setRotationDirty() {
+        dirty[1] = true;
+    }
+
+    protected void setHalfExtentsDirty() {
+        dirty[2] = true;
+    }
+
     private void update() {
-        if (version[0] != parent.positionVersion() && version[1] == parent.rotationVersion()) {
+        if ((!dirty[1] && !dirty[2] && (version[0] != parent.positionVersion() && version[1] == parent.rotationVersion()) || dirty[0])) {
+            dirty[0] = false;
+            version[0] = parent.positionVersion();
             //仅进行位置移动
             Vector3f position = parent.getPosition();
             Quaternionf rotation = parent.getRotation();
@@ -127,12 +150,16 @@ public class LocalOBB<T, D> implements ILocalOBB<T, D> {
                 vertex.add(offset);
             }
 
-            version[0] = parent.positionVersion();
             return;
-        } else if (version[0] == parent.positionVersion() && version[1] == parent.rotationVersion()) {
+        } else if (version[0] == parent.positionVersion() && version[1] == parent.rotationVersion() && !dirty[0] && !dirty[1] && !dirty[2]) {
             return;
         }
 
+        dirty[0] = false;
+        dirty[1] = false;
+        dirty[2] = false;
+        version[0] = parent.positionVersion();
+        version[1] = parent.rotationVersion();
         Vector3f position = parent.getPosition();
         Quaternionf rotation = parent.getRotation();
         Vector3f center = rotation.transform(this.localCenter, globalCenter).add(position);
@@ -159,8 +186,5 @@ public class LocalOBB<T, D> implements ILocalOBB<T, D> {
         vertices[5].set(center).sub(axes[0].mul(halfExtents.x, v)).add(axes[1].mul(halfExtents.y, v)).sub(axes[2].mul(halfExtents.z, v));
         vertices[6].set(center).sub(axes[0].mul(halfExtents.x, v)).sub(axes[1].mul(halfExtents.y, v)).add(axes[2].mul(halfExtents.z, v));
         vertices[7].set(center).sub(axes[0].mul(halfExtents.x, v)).sub(axes[1].mul(halfExtents.y, v)).sub(axes[2].mul(halfExtents.z, v));
-
-        version[0] = parent.positionVersion();
-        version[1] = parent.rotationVersion();
     }
 }

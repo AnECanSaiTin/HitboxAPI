@@ -19,7 +19,9 @@ public class LocalComposite<C extends ILocalCollider<T, D>, T, D> implements ILo
     private final Vector3f globalPosition = new Vector3f();
     private final Quaternionf globalRotation = new Quaternionf();
     private final ICoordinateConverter parent;
+    /// 0 - 中心点, 1 - 旋转
     private final short[] version = new short[2];
+    private final boolean[] dirty = new boolean[]{true, true};
     private final LocalCompositeCoordinateConverter child = new LocalCompositeCoordinateConverter(this);
 
     public boolean disable;
@@ -39,6 +41,7 @@ public class LocalComposite<C extends ILocalCollider<T, D>, T, D> implements ILo
 
     @Override
     public void setLocalPosition(Vector3f position) {
+        dirty[0] = true;
         localPosition.set(position);
     }
 
@@ -49,6 +52,7 @@ public class LocalComposite<C extends ILocalCollider<T, D>, T, D> implements ILo
 
     @Override
     public void setLocalRotation(Quaternionf rotation) {
+        dirty[1] = true;
         localRotation.set(rotation);
     }
 
@@ -186,15 +190,25 @@ public class LocalComposite<C extends ILocalCollider<T, D>, T, D> implements ILo
         return disable;
     }
 
+    protected void setPositionDirty() {
+        dirty[0] = true;
+    }
+
+    protected void setRotationDirty() {
+        dirty[1] = true;
+    }
+
     private void update() {
-        if (parent.positionVersion() != version[0] || parent.rotationVersion() != version[1]) {
+        if (parent.positionVersion() != version[0] || parent.rotationVersion() != version[1] || dirty[0] || dirty[1]) {
+            dirty[0] = false;
+            dirty[1] = false;
+            version[0] = parent.positionVersion();
+            version[1] = parent.rotationVersion();
+            child.update();
             Vector3f position = parent.getPosition();
             Quaternionf rotation = parent.getRotation();
             rotation.transform(localPosition, globalPosition).add(position);
             rotation.mul(localRotation, globalRotation);
-            version[0] = parent.positionVersion();
-            version[1] = parent.rotationVersion();
-            child.update();
         }
     }
 }

@@ -186,9 +186,11 @@ public class HitLocalCapsule extends LocalCapsule<Entity, Void> implements IHitC
             damage = list.getFloat(index++);
         }
         if ((update & 1 << 1) != 0) {
+            setCenterDirty();
             getLocalCenter().set(list.getFloat(index++), list.getFloat(index++), list.getFloat(index++));
         }
         if ((update & 1 << 2) != 0) {
+            setRotationDirty();
             getLocalRotation().set(list.getFloat(index++), list.getFloat(index++), list.getFloat(index++), list.getFloat(index++));
         }
         if ((update & 1 << 3) != 0) {

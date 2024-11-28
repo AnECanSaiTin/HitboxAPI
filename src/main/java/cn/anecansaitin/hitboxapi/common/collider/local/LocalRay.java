@@ -12,7 +12,9 @@ public class LocalRay<T, D> implements ILocalRay<T, D> {
     private final Vector3f globalDirection = new Vector3f();
     private float length; // 射线的长度
     private final ICoordinateConverter parent;
+    /// 0 - 中心点, 1 - 旋转
     private final short[] version = new short[2];
+    private boolean dirty = true;
 
     private boolean disable;
 
@@ -32,6 +34,7 @@ public class LocalRay<T, D> implements ILocalRay<T, D> {
 
     @Override
     public void setLocalOrigin(Vector3f localOrigin) {
+        dirty = true;
         this.localOrigin.set(localOrigin);
     }
 
@@ -42,6 +45,7 @@ public class LocalRay<T, D> implements ILocalRay<T, D> {
 
     @Override
     public void setLocalDirection(Vector3f localDirection) {
+        dirty = true;
         this.localDirection.set(localDirection);
     }
 
@@ -75,14 +79,16 @@ public class LocalRay<T, D> implements ILocalRay<T, D> {
 
     @Override
     public void setDirection(Vector3f direction) {
+        dirty = true;
+        version[1] = parent.rotationVersion();
         Quaternionf rotation = parent.getRotation().conjugate(new Quaternionf());
         localDirection.set(direction).rotate(rotation);
         globalDirection.set(direction);
-        version[1] = parent.rotationVersion();
     }
 
     @Override
     public void setDisable(boolean disable) {
+        dirty = true;
         this.disable = disable;
     }
 
@@ -91,14 +97,21 @@ public class LocalRay<T, D> implements ILocalRay<T, D> {
         return disable;
     }
 
+    protected void setOriginOrDirectionDirty() {
+        dirty = true;
+    }
+
     private void update() {
-        if (parent.positionVersion() != version[0] || parent.rotationVersion() != version[1]) {
-            Vector3f position = parent.getPosition();
-            Quaternionf rotation = parent.getRotation();
-            rotation.transform(this.localOrigin, globalOrigin).add(position);
-            rotation.transform(this.localDirection, globalDirection);
-            version[0] = parent.positionVersion();
-            version[1] = parent.rotationVersion();
+        if (parent.positionVersion() == version[0] && parent.rotationVersion() == version[1] && !dirty) {
+            return;
         }
+
+        dirty = false;
+        version[0] = parent.positionVersion();
+        version[1] = parent.rotationVersion();
+        Vector3f position = parent.getPosition();
+        Quaternionf rotation = parent.getRotation();
+        rotation.transform(this.localOrigin, globalOrigin).add(position);
+        rotation.transform(this.localDirection, globalDirection);
     }
 }

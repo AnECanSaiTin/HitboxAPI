@@ -147,9 +147,11 @@ public class HurtLocalRay extends LocalRay<Entity, Void> implements IHurtCollide
             scale = list.getFloat(index++);
         }
         if ((update & 1 << 1) != 0) {
+            setOriginOrDirectionDirty();
             getLocalOrigin().set(list.getFloat(index++), list.getFloat(index++), list.getFloat(index++));
         }
         if ((update & 1 << 2) != 0) {
+            setOriginOrDirectionDirty();
             getLocalDirection().set(list.getFloat(index++), list.getFloat(index++), list.getFloat(index++));
         }
         if ((update & 1 << 3) != 0) {

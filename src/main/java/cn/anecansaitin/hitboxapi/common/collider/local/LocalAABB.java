@@ -10,7 +10,10 @@ public class LocalAABB<T, D> implements ILocalAABB<T, D> {
     private final Vector3f halfExtents;
     private final Vector3f globalCenter;
     private final ICoordinateConverter parent;
+    /// 0 - 中心点, 1 - 旋转
     private final short[] version = new short[2];
+    /// 中心点
+    private boolean dirty = true;
     private boolean disable;
 
     public LocalAABB(Vector3f localCenter, Vector3f halfExtents, ICoordinateConverter parent) {
@@ -29,6 +32,7 @@ public class LocalAABB<T, D> implements ILocalAABB<T, D> {
 
     @Override
     public void setLocalCenter(Vector3f center) {
+        dirty = true;
         localCenter.set(center);
     }
 
@@ -54,25 +58,20 @@ public class LocalAABB<T, D> implements ILocalAABB<T, D> {
 
     @Override
     public Vector3f getCenter() {
-        // 由局部中心点计算世界坐标系下的中心点
-        if (parent.positionVersion() != version[0] || parent.rotationVersion() != version[1]) {
-            Vector3f position = parent.getPosition();
-            Quaternionf rotation = parent.getRotation();
-            rotation.transform(localCenter, globalCenter).add(position);
-        }
-
+        update();
         return globalCenter;
     }
 
     @Override
     public void setCenter(Vector3f center) {
+        dirty = true;
+        version[0] = parent.positionVersion();
+        version[1] = parent.rotationVersion();
         Vector3f position = parent.getPosition();
         Quaternionf rotation = parent.getRotation().conjugate(new Quaternionf());
 
         localCenter.set(center).sub(position).rotate(rotation);
         globalCenter.set(center);
-        version[0] = parent.positionVersion();
-        version[1] = parent.rotationVersion();
     }
 
     @Override
@@ -93,5 +92,22 @@ public class LocalAABB<T, D> implements ILocalAABB<T, D> {
     @Override
     public boolean disable() {
         return disable;
+    }
+
+    protected void setCenterDirty() {
+        dirty = true;
+    }
+
+    private void update() {
+        if (parent.positionVersion() == version[0] && parent.rotationVersion() == version[1] && !dirty) {
+            return;
+        }
+
+        version[0] = parent.positionVersion();
+        version[1] = parent.rotationVersion();
+        dirty = false;
+        Vector3f position = parent.getPosition();
+        Quaternionf rotation = parent.getRotation();
+        rotation.transform(localCenter, globalCenter).add(position);
     }
 }

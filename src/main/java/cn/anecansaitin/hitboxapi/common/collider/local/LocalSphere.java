@@ -11,6 +11,7 @@ public class LocalSphere<T, D> implements ILocalSphere<T, D> {
     private final Vector3f globalCenter = new Vector3f();
     private final ICoordinateConverter parent;
     private final short[] version = new short[2];
+    private boolean dirty = true;
 
     private boolean disable;
 
@@ -29,6 +30,7 @@ public class LocalSphere<T, D> implements ILocalSphere<T, D> {
 
     @Override
     public void setLocalCenter(Vector3f center) {
+        dirty = true;
         this.localCenter.set(center);
     }
 
@@ -44,26 +46,20 @@ public class LocalSphere<T, D> implements ILocalSphere<T, D> {
 
     @Override
     public Vector3f getCenter() {
-        if (parent.positionVersion() != version[0] || parent.rotationVersion() != version[1]) {
-            Vector3f position = parent.getPosition();
-            Quaternionf rotation = parent.getRotation();
-            rotation.transform(this.localCenter, globalCenter).add(position);
-            version[0] = parent.positionVersion();
-            version[1] = parent.rotationVersion();
-        }
-
+        update();
         return globalCenter;
     }
 
     @Override
     public void setCenter(Vector3f center) {
+        dirty = true;
+        version[0] = parent.positionVersion();
+        version[1] = parent.rotationVersion();
         Vector3f position = parent.getPosition();
         Quaternionf rotation = parent.getRotation().conjugate(new Quaternionf());
 
         localCenter.set(center).sub(position).rotate(rotation);
         globalCenter.set(center);
-        version[0] = parent.positionVersion();
-        version[1] = parent.rotationVersion();
     }
 
     @Override
@@ -74,5 +70,22 @@ public class LocalSphere<T, D> implements ILocalSphere<T, D> {
     @Override
     public boolean disable() {
         return disable;
+    }
+
+    protected void setCenterDirty() {
+        dirty = true;
+    }
+
+    private void update() {
+        if (parent.positionVersion() == version[0] && parent.rotationVersion() == version[1] && !dirty) {
+            return;
+        }
+
+        dirty = false;
+        version[0] = parent.positionVersion();
+        version[1] = parent.rotationVersion();
+        Vector3f position = parent.getPosition();
+        Quaternionf rotation = parent.getRotation();
+        rotation.transform(this.localCenter, globalCenter).add(position);
     }
 }

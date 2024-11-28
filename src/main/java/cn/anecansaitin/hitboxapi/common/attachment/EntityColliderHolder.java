@@ -79,14 +79,14 @@ public class EntityColliderHolder implements IEntityColliderHolder {
     @Override
     public void removeHurtBox(String name) {
         if (hurtBox.remove(name) != null) {
-            addRemoveLog(name);
+            addRemoveLog(name, true);
         }
     }
 
     @Override
     public void removeHitBox(String name) {
         if (hitBox.remove(name) != null) {
-            addRemoveLog(name);
+            addRemoveLog(name, false);
         }
     }
 
@@ -249,10 +249,11 @@ public class EntityColliderHolder implements IEntityColliderHolder {
         }
     }
 
-    private void addRemoveLog(String name) {
+    private void addRemoveLog(String name, boolean mapType) {
         CompoundTag root = new CompoundTag();
         changeLog.add(root);
         root.putBoolean("0", false);
+        root.putBoolean("1", mapType);
         root.putString("2", name);
     }
 
