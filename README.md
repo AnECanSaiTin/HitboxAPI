@@ -10,18 +10,12 @@
 - Compound
   - Multiple collision boxes can be combined into one.
   - Composite collision boxes can be nested.
-  - Composable AABB, collision detection works normally, but rendering is incorrect.
 
 ### How to Use
 
-Create a new collision box object wherever collision detection is needed, and determine whether a collision has occurred using **ICollision#isColliding**.
-- **isColliding(ICollision other)** is only applicable to collision boxes in the same coordinate system.
-- **isColliding(BoxPoseStack poseStack, ICollision other, BoxPoseStack otherPoseStack)** is applicable to collision boxes in different coordinate systems. Ensure that the two BoxPoseStacks can transform the collision boxes into the same coordinate system.
+In any place where collision detection is needed, create a collision box object and use the methods in [ColliderUtil](src/main/java/cn/anecansaitin/hitboxapi/api/common/collider/ColliderUtil.java) to determine if a collision has occurred.
 
-
-For entities (Entity), you can cache the collision box by attaching **HitboxDataAttachments#COLLISION**. The cached collision box can be rendered by pressing **F3 + B**. Note that this Data does not have a synchronization implementation yet.
-
-For all collision boxes that require rotation, the corresponding mark method must be called after any rotation to prevent the collision detection from failing.
+For entities (Entity), you can achieve collision box caching by attaching **HitboxDataAttachments#COLLISION**. The cached collision box can be rendered by pressing **F3 + B**. Note that this Data does not have a persistence implementation.
 
 ### Performance
 

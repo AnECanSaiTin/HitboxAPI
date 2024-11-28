@@ -11,6 +11,5 @@ import java.util.function.Supplier;
 
 public class HitboxDataAttachments {
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENTS = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, HitboxApi.MODID);
-    //todo 序列化，客户端同步
     public static final Supplier<AttachmentType<IEntityColliderHolder>> COLLISION = ATTACHMENTS.register("collision", () -> AttachmentType.builder(() -> (IEntityColliderHolder) new EntityColliderHolder()).build());
 }

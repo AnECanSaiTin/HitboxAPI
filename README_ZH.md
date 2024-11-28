@@ -10,18 +10,13 @@
 - 复合碰撞箱（Compound） 
   - 可将多个碰撞箱组合成一个
   - 可嵌套复合碰撞箱
-  - 可组合AABB，碰撞检测正常，但渲染不正常
 
 ### 如何使用
 
-在任何需要进行碰撞检测的地方新建一个碰撞箱对象，并通过**ICollision#isColliding** 来判断是否发生碰撞。
-- **isColliding(ICollision other)** 仅适用于处于相同坐标系的碰撞箱
-- **isColliding(BoxPoseStack poseStack, ICollision other, BoxPoseStack otherPoseStack)** 适用于处于不同坐标系的碰撞箱。需确保两个BoxPoseStack可以分别将碰撞箱转换为相同坐标系。
+在任何需要进行碰撞检测的地方新建一个碰撞箱对象，并通过[ColliderUtil](src/main/java/cn/anecansaitin/hitboxapi/api/common/collider/ColliderUtil.java)里的方法来判断是否发生碰撞。
 
 对于实体（Entity），可以通过附加**HitboxDataAttachments#COLLISION** 来实现碰撞箱的缓存。通过此缓存的碰撞箱可以通过**F3 + B** 
-打开碰撞箱渲染。注意，该Data暂无同步实现。
-
-对于所有需要旋转的碰撞箱，需要在进行任何旋转后执行对应的mark方法，否则会导致碰撞判定失效。
+打开碰撞箱渲染。注意，该Data无持久化实现。
 
 ### 性能
 

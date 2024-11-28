@@ -2,6 +2,7 @@ package cn.anecansaitin.hitboxapi.common;
 
 import cn.anecansaitin.hitboxapi.HitboxApi;
 import cn.anecansaitin.hitboxapi.common.network.S2CBattleColliderFullSyne;
+import cn.anecansaitin.hitboxapi.common.network.S2CBattleColliderIncrementalSyne;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -16,6 +17,11 @@ public class HitboxNetwork {
                 S2CBattleColliderFullSyne.TYPE,
                 S2CBattleColliderFullSyne.CODEC,
                 S2CBattleColliderFullSyne::handle
+        );
+        registrar.playToClient(
+                S2CBattleColliderIncrementalSyne.TYPE,
+                S2CBattleColliderIncrementalSyne.CODEC,
+                S2CBattleColliderIncrementalSyne::handle
         );
     }
 }

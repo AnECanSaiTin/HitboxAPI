@@ -2,9 +2,12 @@ package cn.anecansaitin.hitboxapi.common.listener;
 
 import cn.anecansaitin.hitboxapi.HitboxApi;
 import cn.anecansaitin.hitboxapi.api.common.collider.ColliderUtil;
+import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHitCollider;
+import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHurtCollider;
 import cn.anecansaitin.hitboxapi.common.HitboxDataAttachments;
 import cn.anecansaitin.hitboxapi.api.common.attachment.IEntityColliderHolder;
 import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
+import cn.anecansaitin.hitboxapi.common.network.S2CBattleColliderIncrementalSyne;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -12,6 +15,7 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.Collection;
 import java.util.List;
@@ -32,25 +36,26 @@ public class LevelTick {
 
         //todo 这里可能需要多线程
         for (Entity entity : serverLevel.getAllEntities()) {
-            collision(entity);
+            Optional<IEntityColliderHolder> data = entity.getExistingData(HitboxDataAttachments.COLLISION);
+
+            if (data.isEmpty()) continue;
+
+            IEntityColliderHolder entityColliderHolder = data.get();
+            collision(entity, entityColliderHolder);
+            incremental(entity, entityColliderHolder);
         }
     }
 
-    private static void collision(Entity entity) {
-        Optional<IEntityColliderHolder> data = entity.getExistingData(HitboxDataAttachments.COLLISION);
-
-        if (data.isEmpty()) return;
-
-        IEntityColliderHolder entityColliderHolder = data.get();
-        Map<String, ICollider<Entity, Void>> hitBox = entityColliderHolder.getHitBox();
+    private static void collision(Entity entity, IEntityColliderHolder holder) {
+        Map<String, IHitCollider> hitBox = holder.getHitBox();
 
         //没有攻击盒则返回
         if (hitBox.isEmpty()) return;
 
-        Collection<ICollider<Entity, Void>> hitBoxValues = hitBox.values();
+        Collection<IHitCollider> hitBoxValues = hitBox.values();
 
         //更新坐标变换栈
-        entityColliderHolder.getCoordinateConverter().update();
+        holder.getCoordinateConverter().update();
 
         //todo 如何判断检测的范围
         List<Entity> entities = entity.level().getEntities(entity, entity.getBoundingBox().inflate(5));
@@ -64,7 +69,7 @@ public class LevelTick {
             }
 
             IEntityColliderHolder enemyColliderHolder = enemyData.get();
-            Map<String, ICollider<Entity, Void>> hurtBox = enemyColliderHolder.getHurtBox();
+            Map<String, IHurtCollider> hurtBox = enemyColliderHolder.getHurtBox();
 
             // 没有受击盒则跳过
             if (hurtBox.isEmpty()) continue;
@@ -81,5 +86,14 @@ public class LevelTick {
                 }
             }
         }
+    }
+
+    private static void incremental(Entity entity, IEntityColliderHolder holder) {
+        if (!holder.shouldUpdate()) {
+            return;
+        }
+
+        // 发送增量更新
+        PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, new S2CBattleColliderIncrementalSyne(entity.getId(), holder));
     }
 }

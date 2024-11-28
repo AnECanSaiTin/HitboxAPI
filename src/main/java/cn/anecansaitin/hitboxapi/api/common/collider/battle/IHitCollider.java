@@ -10,10 +10,14 @@ import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.Nullable;
 
-public interface IHitCollider extends ILocalCollider<Entity, Void>, INBTSerializable<CompoundTag> {
+public interface IHitCollider extends ILocalCollider<Entity, Void>, INBTSerializable<CompoundTag>, IIncremental<CompoundTag> {
     float getDamage();
 
+    void setDamage(float damage);
+
     ResourceKey<DamageType> getDamageType();
+
+    void setDamageType(ResourceKey<DamageType> damageType);
 
     @Override
     default <O> void onCollide(Entity entity, O otherEntity, ICollider<O, ?> other, @Nullable Void data) {

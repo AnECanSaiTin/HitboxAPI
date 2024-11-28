@@ -2,7 +2,6 @@ package cn.anecansaitin.hitboxapi.common.network;
 
 import cn.anecansaitin.hitboxapi.HitboxApi;
 import cn.anecansaitin.hitboxapi.api.common.attachment.IEntityColliderHolder;
-import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
 import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHitCollider;
 import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHurtCollider;
 import cn.anecansaitin.hitboxapi.common.HitboxDataAttachments;
@@ -48,12 +47,8 @@ public record S2CBattleColliderFullSyne(int id, CompoundTag tag) implements Cust
         CompoundTag tag = new CompoundTag();
         ListTag hit = new ListTag();
 
-        for (Map.Entry<String, ICollider<Entity, Void>> entry : holder.getHitBox().entrySet()) {
-            ICollider<Entity, Void> value = entry.getValue();
-
-            if (!(value instanceof IHitCollider hitCollider)) {
-                continue;
-            }
+        for (Map.Entry<String, IHitCollider> entry : holder.getHitBox().entrySet()) {
+            IHitCollider hitCollider = entry.getValue();
 
             String key = entry.getKey();
             CompoundTag nbt = hitCollider.serializeNBT(PROVIDER);
@@ -75,12 +70,8 @@ public record S2CBattleColliderFullSyne(int id, CompoundTag tag) implements Cust
 
         ListTag hurt = new ListTag();
 
-        for (Map.Entry<String, ICollider<Entity, Void>> entry : holder.getHurtBox().entrySet()) {
-            ICollider<Entity, Void> value = entry.getValue();
-
-            if (!(value instanceof IHurtCollider hurtCollider)) {
-                continue;
-            }
+        for (Map.Entry<String, IHurtCollider> entry : holder.getHurtBox().entrySet()) {
+            IHurtCollider hurtCollider = entry.getValue();
 
             String key = entry.getKey();
             CompoundTag nbt = hurtCollider.serializeNBT(PROVIDER);

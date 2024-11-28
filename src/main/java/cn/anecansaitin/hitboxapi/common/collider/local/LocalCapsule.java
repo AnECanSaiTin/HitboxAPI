@@ -122,6 +122,7 @@ public class LocalCapsule<T, D> implements ILocalCapsule<T, D> {
         Quaternionf rotation = parent.getRotation();
         rotation.transform(localCenter, globalCenter).add(position);
         rotation.mul(localRotation, globalRotation);
+        globalDirection.set(0, 1, 0).rotate(globalRotation);
         version[0] = parent.positionVersion();
         version[1] = parent.rotationVersion();
     }

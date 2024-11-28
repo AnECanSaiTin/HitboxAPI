@@ -1,6 +1,8 @@
 package cn.anecansaitin.hitboxapi.mixin.client;
 
 import cn.anecansaitin.hitboxapi.api.client.collider.ICollisionRender;
+import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHitCollider;
+import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHurtCollider;
 import cn.anecansaitin.hitboxapi.client.collider.render.*;
 import cn.anecansaitin.hitboxapi.common.HitboxDataAttachments;
 import cn.anecansaitin.hitboxapi.api.common.attachment.IEntityColliderHolder;
@@ -19,6 +21,7 @@ import java.util.Optional;
 
 @Mixin(EntityRenderDispatcher.class)
 public abstract class EntityRenderDispatcherMixin {
+    //todo 增加一种能注册渲染的方式
     @Inject(method = "renderHitbox", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;renderVector(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;Lorg/joml/Vector3f;Lnet/minecraft/world/phys/Vec3;I)V"))
     private static void hitboxApi$renderColliders(PoseStack poseStack, VertexConsumer buffer, Entity entity, float red, float green, float blue, float alpha, CallbackInfo ci) {
         Optional<IEntityColliderHolder> data = entity.getExistingData(HitboxDataAttachments.COLLISION);
@@ -28,11 +31,11 @@ public abstract class EntityRenderDispatcherMixin {
         IEntityColliderHolder holder = data.get();
         holder.getCoordinateConverter().update();
 
-        for (ICollider<Entity, Void> collision : holder.getHurtBox().values()) {
+        for (IHurtCollider collision : holder.getHurtBox().values()) {
             hitboxApi$renderCollider(entity, collision, poseStack, buffer, 0, 1, 0, alpha);
         }
 
-        for (ICollider<Entity, Void> collision : holder.getHitBox().values()) {
+        for (IHitCollider collision : holder.getHitBox().values()) {
             hitboxApi$renderCollider(entity, collision, poseStack, buffer, 1, 0, 0, alpha);
         }
     }
@@ -41,7 +44,7 @@ public abstract class EntityRenderDispatcherMixin {
     private static void hitboxApi$renderCollider(Entity entity, ICollider<Entity, Void> collision, PoseStack poseStack, VertexConsumer buffer, float red, float green, float blue, float alpha) {
         if (collision.disable()) return;
 
-        ICollisionRender<Entity> renderer = switch (collision.getType()){
+        ICollisionRender<Entity> renderer = switch (collision.getType()) {
             case OBB -> EntityOBBRender.INSTANCE;
             case SPHERE -> EntitySphereRender.INSTANCE;
             case CAPSULE -> EntityCapsuleRender.INSTANCE;

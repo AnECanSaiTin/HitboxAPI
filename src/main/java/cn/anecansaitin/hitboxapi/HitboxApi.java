@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 
 @Mod(HitboxApi.MODID)
 public class HitboxApi {
+    //todo 懒加载碰撞箱本身也需要一个被修改标记
     public static final String MODID = "hitboxapi";
     private static final Logger LOGGER = LogUtils.getLogger();
 

@@ -172,6 +172,10 @@ public class LocalComposite<C extends ILocalCollider<T, D>, T, D> implements ILo
         return colliderNames.get(index);
     }
 
+    public int getColliderIndex(String name) {
+        return colliderMap.get(name).leftInt();
+    }
+
     @Override
     public void setDisable(boolean disable) {
         this.disable = disable;
