@@ -1,9 +1,11 @@
 package cn.anecansaitin.hitboxapi.common.attachment;
 
 import cn.anecansaitin.hitboxapi.api.common.attachment.IEntityColliderHolder;
+import cn.anecansaitin.hitboxapi.api.common.collider.IAABB;
 import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
 import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHitCollider;
 import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHurtCollider;
+import cn.anecansaitin.hitboxapi.common.collider.basic.AABBPlus;
 import cn.anecansaitin.hitboxapi.common.collider.battle.hit.*;
 import cn.anecansaitin.hitboxapi.common.collider.battle.hurt.*;
 import cn.anecansaitin.hitboxapi.common.collider.local.EntityCoordinateConverter;
@@ -17,6 +19,7 @@ import org.joml.Vector3f;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class EntityColliderHolder implements IEntityColliderHolder {
     /**
@@ -45,13 +48,17 @@ public class EntityColliderHolder implements IEntityColliderHolder {
     /// - "4" 碰撞箱完整序列化
     private final ArrayList<CompoundTag> changeLog = new ArrayList<>();
 
+    private UUID id;
+
     /// 仅用于注册
     @Deprecated()
     public EntityColliderHolder() {
+        id = UUID.randomUUID();
     }
 
     public EntityColliderHolder(Entity entity) {
         converter = new EntityCoordinateConverter(entity);
+        id = UUID.randomUUID();
     }
 
     @Override
@@ -96,6 +103,45 @@ public class EntityColliderHolder implements IEntityColliderHolder {
     }
 
     @Override
+    public UUID getID() {
+        return id;
+    }
+
+    @Override
+    public IAABB<?, ?> getFastHitCollider() {
+        //todo 缓存
+        float[] vertices = new float[]{
+                Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE,
+                Float.MIN_VALUE, Float.MIN_VALUE, Float.MIN_VALUE
+        };
+
+        for (IHitCollider value : hitBox.values()) {
+            IAABB<Entity, Void> fastCollider = value.getFastCollider();
+
+            if (fastCollider == null) {
+                continue;
+            }
+
+            Vector3f min = fastCollider.getMin();
+            Vector3f max = fastCollider.getMax();
+            if (min.x < vertices[0]) vertices[0] = min.x;
+            if (min.y < vertices[1]) vertices[1] = min.y;
+            if (min.z < vertices[2]) vertices[2] = min.z;
+            if (max.x > vertices[3]) vertices[3] = max.x;
+            if (max.y > vertices[4]) vertices[4] = max.y;
+            if (max.z > vertices[5]) vertices[5] = max.z;
+        }
+
+        for (float vertex : vertices) {
+            if (vertex == Float.MAX_VALUE || vertex == Float.MIN_VALUE) {
+                return null;
+            }
+        }
+
+        return new AABBPlus<>(new Vector3f(vertices[0], vertices[1], vertices[2]), new Vector3f(vertices[3], vertices[4], vertices[5]));
+    }
+
+    @Override
     public boolean shouldUpdate() {
         return !changeLog.isEmpty() || checkChildUpdate();
     }
@@ -103,6 +149,8 @@ public class EntityColliderHolder implements IEntityColliderHolder {
     @Override
     public CompoundTag getUpdate() {
         CompoundTag tag = new CompoundTag();
+        tag.putUUID("-1", id);
+
         if (!changeLog.isEmpty()) {
             ListTag list = new ListTag();
             tag.put("0", list);
@@ -153,6 +201,14 @@ public class EntityColliderHolder implements IEntityColliderHolder {
 
     @Override
     public void update(CompoundTag tag) {
+        UUID uuid = tag.getUUID("-1");
+
+        if (!uuid.equals(id)) {
+            id = uuid;
+            hurtBox.clear();
+            hitBox.clear();
+        }
+
         for (Tag t : tag.getList("0", CompoundTag.TAG_COMPOUND)) {
             CompoundTag box = (CompoundTag) t;
             boolean modifyType = box.getBoolean("0");
@@ -258,6 +314,7 @@ public class EntityColliderHolder implements IEntityColliderHolder {
     }
 
     private boolean checkChildUpdate() {
+        //todo 修改为碰撞箱主动提交需要修改
         for (IHurtCollider value : hurtBox.values()) {
             if (value.shouldUpdate()) {
                 return true;

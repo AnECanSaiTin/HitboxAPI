@@ -80,7 +80,13 @@ public class LocalComposite<C extends ILocalCollider<T, D>, T, D> implements ILo
 
     @Override
     public C getCollider(int index) {
+        update();
         return colliders.get(index);
+    }
+
+    public C getCollider(String name) {
+        update();
+        return colliderMap.get(name).right();
     }
 
     /// 设置指定索引碰撞箱
@@ -92,6 +98,14 @@ public class LocalComposite<C extends ILocalCollider<T, D>, T, D> implements ILo
     public void setCollider(int index, C collider) {
         colliders.set(index, collider);
         colliderMap.replace(colliderNames.get(index), IntObjectPair.of(index, collider));
+    }
+
+    public void setCollider(String name, C collider) {
+        IntObjectPair<C> old = colliderMap.get(name);
+        int index = old.leftInt();
+        colliderMap.replace(name, IntObjectPair.of(index, collider));
+        colliders.set(index, collider);
+        colliderNames.set(index, name);
     }
 
     /// 设置指定索引碰撞箱
@@ -119,9 +133,14 @@ public class LocalComposite<C extends ILocalCollider<T, D>, T, D> implements ILo
 
     /// 添加碰撞箱
     public void addCollider(String name, C collider) {
+        if (contains(name)) {
+            setCollider(name, collider);
+            return;
+        }
+
+        colliderMap.put(name, IntObjectPair.of(colliders.size() - 1, collider));
         colliders.add(collider);
         colliderNames.add(name);
-        colliderMap.put(name, IntObjectPair.of(colliders.size() - 1, collider));
     }
 
     /// 添加碰撞箱
@@ -178,6 +197,10 @@ public class LocalComposite<C extends ILocalCollider<T, D>, T, D> implements ILo
 
     public int getColliderIndex(String name) {
         return colliderMap.get(name).leftInt();
+    }
+
+    public boolean contains(String name) {
+        return colliderMap.containsKey(name);
     }
 
     @Override

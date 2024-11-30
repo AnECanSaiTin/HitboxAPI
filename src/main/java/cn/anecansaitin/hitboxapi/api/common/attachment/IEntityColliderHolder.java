@@ -1,5 +1,6 @@
 package cn.anecansaitin.hitboxapi.api.common.attachment;
 
+import cn.anecansaitin.hitboxapi.api.common.collider.IAABB;
 import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHitCollider;
 import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHurtCollider;
 import cn.anecansaitin.hitboxapi.api.common.collider.battle.IIncremental;
@@ -7,6 +8,7 @@ import cn.anecansaitin.hitboxapi.common.collider.local.EntityCoordinateConverter
 import net.minecraft.nbt.CompoundTag;
 
 import java.util.Map;
+import java.util.UUID;
 
 /// 这仅仅是一个简单的示例
 public interface IEntityColliderHolder extends IIncremental<CompoundTag> {
@@ -22,5 +24,11 @@ public interface IEntityColliderHolder extends IIncremental<CompoundTag> {
 
     void removeHitBox(String name);
 
+    default IAABB<?, ?> getFastHitCollider() {
+        return null;
+    }
+
     EntityCoordinateConverter getCoordinateConverter();
+
+    UUID getID();
 }

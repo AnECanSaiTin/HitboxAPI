@@ -26,6 +26,20 @@ public interface ICollider<T, D> {
     /// @return 碰撞箱类型
     ColliderTyep getType();
 
+    /// 通过AABB碰撞箱进行快速排除，提高碰撞检测效率。
+    ///
+    /// AABB要求：
+    /// - 完整涵盖整个碰撞箱
+    /// - 尽可能小
+    ///
+    /// 可为Null，则不进行快速排除。
+    ///
+    /// @return 快速碰撞箱
+    @Nullable
+    default IAABB<T, D> getFastCollider() {
+        return null;
+    }
+
     /// @param disable 设置禁用
     void setDisable(boolean disable);
 

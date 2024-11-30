@@ -35,6 +35,18 @@ public class ColliderUtil {
     public static <T1, D1, T2, D2> boolean colliding(ICollider<T1, D1> collider, T1 entity1, D1 data1, ICollider<T2, D2> other, T2 entity2, D2 data2) {
         ColliderTyep colliderType = collider.getType();
         ColliderTyep otherType = other.getType();
+        IAABB<T1, D1> fastCollider1 = collider.getFastCollider();
+        IAABB<T2, D2> fastCollider2 = other.getFastCollider();
+
+        // 快速碰撞检测
+        if (fastCollider1 != null && fastCollider2 != null) {
+            boolean colliding = ColliderUtil.isColliding(fastCollider1, fastCollider2);
+
+            if (!colliding) {
+                return false;
+            }
+        }
+
         boolean result = switch (colliderType) {
             case OBB -> switch (otherType) {
                 case OBB -> isColliding((IOBB<T1, D1>) collider, (IOBB<T2, D2>) other);
@@ -98,6 +110,17 @@ public class ColliderUtil {
         if (other == null) return false;
         if (collider.disable() || other.disable()) return false;
         if (other == collider) return true;
+
+        IAABB<T1, D1> fastCollider1 = collider.getFastCollider();
+        IAABB<T2, D2> fastCollider2 = other.getFastCollider();
+        // 快速碰撞检测
+        if (fastCollider1 != null && fastCollider2 != null) {
+            boolean colliding = ColliderUtil.isColliding(fastCollider1, fastCollider2);
+
+            if (!colliding) {
+                return false;
+            }
+        }
 
         return switch (collider.getType()) {
             case OBB -> switch (other.getType()) {
@@ -321,16 +344,16 @@ public class ColliderUtil {
      */
     public static boolean isColliding(IRay<?, ?> ray, ISphere<?, ?> sphere) {
         Vector3f origin = ray.getOrigin();
-        Vector3f direction = ray.getDirection();
-        float length = ray.getLength();
-        float x = origin.x + direction.x * length;
-        float y = origin.y + direction.y * length;
-        float z = origin.z + direction.z * length;
+        Vector3f end = ray.getEnd();
 
         Vector3f center = sphere.getCenter();
         float radius = sphere.getRadius();
 
-        return Intersectionf.testLineSegmentSphere(origin.x, origin.y, origin.z, x, y, z, center.x, center.y, center.z, radius * radius);
+        return Intersectionf.testLineSegmentSphere(
+                origin.x, origin.y, origin.z,
+                end.x, end.y, end.z,
+                center.x, center.y, center.z,
+                radius * radius);
     }
 
     /**

@@ -14,10 +14,8 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
-import java.util.stream.Stream;
 
 public class HurtLocalComposite extends LocalComposite<IHurtCollider, Entity, Void> implements IHurtCollider {
-    private static final HolderLookup.Provider EMPTY_PROVIDER = HolderLookup.Provider.create(Stream.empty());
     private float scale;
     /// 存储碰撞箱的修改行为记录，用于增量更新。
     /// 每个Compound含义如下：
@@ -67,6 +65,12 @@ public class HurtLocalComposite extends LocalComposite<IHurtCollider, Entity, Vo
     }
 
     @Override
+    public void setCollider(String name, IHurtCollider collider) {
+        addChangeLog((byte) 3, getColliderIndex(name), name, collider);
+        super.setCollider(name, collider);
+    }
+
+    @Override
     public void setCollider(int index, String name, IHurtCollider collider) {
         addChangeLog((byte) 3, index, name, collider);
         super.setCollider(index, name, collider);
@@ -74,13 +78,18 @@ public class HurtLocalComposite extends LocalComposite<IHurtCollider, Entity, Vo
 
     @Override
     public void addCollider(IHurtCollider collider) {
-        addChangeLog((byte) 1, getCollidersCount(), String.valueOf(getCollidersCount()), collider);
+        addChangeLog((byte) 0, getCollidersCount(), String.valueOf(getCollidersCount()), collider);
         super.addCollider(collider);
     }
 
     @Override
     public void addCollider(String name, IHurtCollider collider) {
-        addChangeLog((byte) 1, getCollidersCount(), name, collider);
+        if (contains(name)) {
+            setCollider(name, collider);
+            return;
+        }
+
+        addChangeLog((byte) 0, getCollidersCount(), name, collider);
         super.addCollider(name, collider);
     }
 
@@ -121,6 +130,8 @@ public class HurtLocalComposite extends LocalComposite<IHurtCollider, Entity, Vo
 
     @Override
     public @UnknownNullability CompoundTag serializeNBT(HolderLookup.Provider provider) {
+        // 如果序列化了碰撞箱，则不再需要变化记录，避免重复生成子碰撞箱。
+        changeLog.clear();
         Vector3f position = getLocalPosition();
         Quaternionf rotation = getLocalRotation();
         CompoundTag tag = new CompoundTag();
@@ -163,8 +174,8 @@ public class HurtLocalComposite extends LocalComposite<IHurtCollider, Entity, Vo
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         ListTag list = nbt.getList("0", FloatTag.TAG_FLOAT);
-        getPosition().set(list.getFloat(0), list.getFloat(1), list.getFloat(2));
-        getRotation().set(list.getFloat(3), list.getFloat(4), list.getFloat(5), list.getFloat(6));
+        getLocalPosition().set(list.getFloat(0), list.getFloat(1), list.getFloat(2));
+        getLocalRotation().set(list.getFloat(3), list.getFloat(4), list.getFloat(5), list.getFloat(6));
         scale = list.getFloat(7);
         ListTag boxList = nbt.getList("1", CompoundTag.TAG_COMPOUND);
         ICoordinateConverter child = getConverter();
@@ -283,7 +294,7 @@ public class HurtLocalComposite extends LocalComposite<IHurtCollider, Entity, Vo
                 byte modifyType = log.getByte("0");
 
                 if (modifyType == 1) {
-                    removeCollider(log.getInt("1"));
+                    super.removeCollider(log.getInt("1"));
                 } else {
                     int i = log.getInt("1");
                     String name = log.getString("2");
@@ -296,12 +307,12 @@ public class HurtLocalComposite extends LocalComposite<IHurtCollider, Entity, Vo
                         case 5 -> new HurtLocalComposite(0, new Vector3f(), new Quaternionf(), child);
                         default -> throw new IllegalStateException("Unexpected value: " + log.getByte("3"));
                     };
-                    collider.deserializeNBT(EMPTY_PROVIDER, log.getCompound("4"));
+                    collider.deserializeNBT(null, log.getCompound("4"));
 
                     switch (modifyType) {
-                        case 0 -> addCollider(name, collider);
-                        case 2 -> addCollider(i, name, collider);
-                        case 3 -> setCollider(i, name, collider);
+                        case 0 -> super.addCollider(name, collider);
+                        case 2 -> super.addCollider(i, name, collider);
+                        case 3 -> super.setCollider(i, name, collider);
                     }
                 }
             }
@@ -343,7 +354,7 @@ public class HurtLocalComposite extends LocalComposite<IHurtCollider, Entity, Vo
             case COMPOSITE -> (byte) 5;
         };
         tag.putByte("3", type);
-        tag.put("4", collider.serializeNBT(EMPTY_PROVIDER));
+        tag.put("4", collider.serializeNBT(null));
     }
 
     private void addRemoveLog(int index) {

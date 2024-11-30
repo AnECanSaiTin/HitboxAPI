@@ -2,6 +2,7 @@ package cn.anecansaitin.hitboxapi.common.listener;
 
 import cn.anecansaitin.hitboxapi.HitboxApi;
 import cn.anecansaitin.hitboxapi.api.common.collider.ColliderUtil;
+import cn.anecansaitin.hitboxapi.api.common.collider.IAABB;
 import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHitCollider;
 import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHurtCollider;
 import cn.anecansaitin.hitboxapi.common.HitboxDataAttachments;
@@ -11,11 +12,13 @@ import cn.anecansaitin.hitboxapi.common.network.S2CBattleColliderIncrementalSyne
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import org.joml.Vector3f;
 
 import java.util.Collection;
 import java.util.List;
@@ -58,7 +61,16 @@ public class LevelTick {
         holder.getCoordinateConverter().update();
 
         //todo 如何判断检测的范围
-        List<Entity> entities = entity.level().getEntities(entity, entity.getBoundingBox().inflate(5));
+        IAABB<?, ?> fastCollider = holder.getFastHitCollider();
+        List<Entity> entities;
+
+        if (fastCollider == null) {
+            entities = entity.level().getEntities(entity, entity.getBoundingBox().inflate(5));
+        } else {
+            Vector3f min = fastCollider.getMin();
+            Vector3f max = fastCollider.getMax();
+            entities = entity.level().getEntities(entity, new AABB(min.x - 5, min.y - 5, min.z - 5, max.x + 5, max.y + 5, max.z + 5));
+        }
 
         enemyFor:
         for (Entity enemy : entities) {
