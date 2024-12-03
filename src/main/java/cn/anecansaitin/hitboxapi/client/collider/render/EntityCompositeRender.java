@@ -1,13 +1,13 @@
 package cn.anecansaitin.hitboxapi.client.collider.render;
 
-import cn.anecansaitin.hitboxapi.api.client.collider.ICollisionRender;
+import cn.anecansaitin.hitboxapi.api.client.collider.IColliderRender;
 import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
 import cn.anecansaitin.hitboxapi.api.common.collider.IComposite;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.world.entity.Entity;
 
-public class EntityCompositeRender implements ICollisionRender<Entity> {
+public class EntityCompositeRender implements IColliderRender<Entity> {
     public static final EntityCompositeRender INSTANCE = new EntityCompositeRender();
 
     @Override
@@ -21,7 +21,7 @@ public class EntityCompositeRender implements ICollisionRender<Entity> {
                 continue;
             }
 
-            ICollisionRender<Entity> renderer = switch (c.getType()){
+            IColliderRender<Entity> renderer = switch (c.getType()){
                 case OBB -> EntityOBBRender.INSTANCE;
                 case SPHERE -> EntitySphereRender.INSTANCE;
                 case CAPSULE -> EntityCapsuleRender.INSTANCE;

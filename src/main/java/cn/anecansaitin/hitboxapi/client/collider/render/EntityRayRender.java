@@ -1,7 +1,7 @@
 package cn.anecansaitin.hitboxapi.client.collider.render;
 
-import cn.anecansaitin.hitboxapi.api.client.collider.CollisionRenderUtil;
-import cn.anecansaitin.hitboxapi.api.client.collider.ICollisionRender;
+import cn.anecansaitin.hitboxapi.api.client.collider.ColliderRenderUtil;
+import cn.anecansaitin.hitboxapi.api.client.collider.IColliderRender;
 import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
 import cn.anecansaitin.hitboxapi.api.common.collider.IRay;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -10,7 +10,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
-public class EntityRayRender implements ICollisionRender<Entity> {
+public class EntityRayRender implements IColliderRender<Entity> {
     public static final EntityRayRender INSTANCE = new EntityRayRender();
 
     @Override
@@ -19,7 +19,7 @@ public class EntityRayRender implements ICollisionRender<Entity> {
         Vec3 position = entity.position();
         Vector3f origin = ray.getOrigin();
         Vector3f end = ray.getEnd();
-        CollisionRenderUtil.renderRay(
+        ColliderRenderUtil.renderRay(
                 poseStack, buffer,
                 (float) (origin.x - position.x), (float) (origin.y - position.y), (float) (origin.z - position.z),
                 (float) (end.x - position.x), (float) (end.y - position.y), (float) (end.z - position.z),

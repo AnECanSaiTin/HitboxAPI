@@ -8,7 +8,7 @@ import org.joml.Quaternionf;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class CollisionRenderUtil {
+public final class ColliderRenderUtil {
     private static final float[][][] capsuleVerticesCache = {
             generateHalfSphere(1, 10, 20, true),
             generateHalfSphere(1, 10, 20, false),

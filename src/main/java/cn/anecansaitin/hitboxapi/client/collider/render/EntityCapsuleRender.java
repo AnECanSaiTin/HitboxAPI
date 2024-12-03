@@ -1,7 +1,7 @@
 package cn.anecansaitin.hitboxapi.client.collider.render;
 
-import cn.anecansaitin.hitboxapi.api.client.collider.CollisionRenderUtil;
-import cn.anecansaitin.hitboxapi.api.client.collider.ICollisionRender;
+import cn.anecansaitin.hitboxapi.api.client.collider.ColliderRenderUtil;
+import cn.anecansaitin.hitboxapi.api.client.collider.IColliderRender;
 import cn.anecansaitin.hitboxapi.api.common.collider.ICapsule;
 import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -11,7 +11,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public class EntityCapsuleRender implements ICollisionRender<Entity> {
+public class EntityCapsuleRender implements IColliderRender<Entity> {
     public static final EntityCapsuleRender INSTANCE = new EntityCapsuleRender();
 
     @Override
@@ -22,7 +22,7 @@ public class EntityCapsuleRender implements ICollisionRender<Entity> {
         Quaternionf rotation = capsule.getRotation();
         float radius = capsule.getRadius();
         float height = capsule.getHeight();
-        CollisionRenderUtil.renderCapsule(
+        ColliderRenderUtil.renderCapsule(
                 poseStack, buffer,
                 (float) (center.x() - position.x()), (float) (center.y() - position.y()), (float) (center.z() - position.z()),
                 radius, height, rotation,

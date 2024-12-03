@@ -1,6 +1,6 @@
 package cn.anecansaitin.hitboxapi.mixin.client;
 
-import cn.anecansaitin.hitboxapi.api.client.collider.ICollisionRender;
+import cn.anecansaitin.hitboxapi.api.client.collider.IColliderRender;
 import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHitCollider;
 import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHurtCollider;
 import cn.anecansaitin.hitboxapi.client.collider.render.*;
@@ -44,7 +44,7 @@ public abstract class EntityRenderDispatcherMixin {
     private static void hitboxApi$renderCollider(Entity entity, ICollider<Entity, Void> collision, PoseStack poseStack, VertexConsumer buffer, float red, float green, float blue, float alpha) {
         if (collision.disable()) return;
 
-        ICollisionRender<Entity> renderer = switch (collision.getType()) {
+        IColliderRender<Entity> renderer = switch (collision.getType()) {
             case OBB -> EntityOBBRender.INSTANCE;
             case SPHERE -> EntitySphereRender.INSTANCE;
             case CAPSULE -> EntityCapsuleRender.INSTANCE;
