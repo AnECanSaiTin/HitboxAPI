@@ -25,11 +25,15 @@ public interface IHitCollider extends ILocalCollider<Entity, Void>, INBTSerializ
             return;
         }
 
+        float damage;
+
         if (!(other instanceof IHurtCollider hurtCollider)) {
-            return;
+            damage = getDamage();
+        } else {
+            damage = hurtCollider.modifyDamage(getDamage());
         }
 
         DamageSources damageSources = entity.damageSources();
-        enemy.hurt(damageSources.source(getDamageType(), entity), hurtCollider.modifyDamage(getDamage()));
+        enemy.hurt(damageSources.source(getDamageType(), entity), damage);
     }
 }

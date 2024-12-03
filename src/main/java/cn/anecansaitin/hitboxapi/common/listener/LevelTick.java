@@ -8,6 +8,7 @@ import cn.anecansaitin.hitboxapi.api.common.collider.battle.IHurtCollider;
 import cn.anecansaitin.hitboxapi.common.HitboxDataAttachments;
 import cn.anecansaitin.hitboxapi.api.common.attachment.IEntityColliderHolder;
 import cn.anecansaitin.hitboxapi.api.common.collider.ICollider;
+import cn.anecansaitin.hitboxapi.common.collider.basic.AABBPlus;
 import cn.anecansaitin.hitboxapi.common.network.S2CBattleColliderIncrementalSyne;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -60,7 +61,6 @@ public class LevelTick {
         //更新坐标变换栈
         holder.getCoordinateConverter().update();
 
-        //todo 如何判断检测的范围
         IAABB<?, ?> fastCollider = holder.getFastHitCollider();
         List<Entity> entities;
 
@@ -77,6 +77,7 @@ public class LevelTick {
             Optional<IEntityColliderHolder> enemyData = enemy.getExistingData(HitboxDataAttachments.COLLISION);
 
             if (enemyData.isEmpty()) {
+                vanillaAABB(hitBoxValues, entity, enemy);
                 continue;
             }
 
@@ -84,7 +85,10 @@ public class LevelTick {
             Map<String, IHurtCollider> hurtBox = enemyColliderHolder.getHurtBox();
 
             // 没有受击盒则跳过
-            if (hurtBox.isEmpty()) continue;
+            if (hurtBox.isEmpty()) {
+                vanillaAABB(hitBoxValues, entity, enemy);
+                continue;
+            }
 
             enemyColliderHolder.getCoordinateConverter().update();
 
@@ -96,6 +100,8 @@ public class LevelTick {
 
                     continue enemyFor;
                 }
+
+                vanillaAABB(hitBoxValues, entity, enemy);
             }
         }
     }
@@ -107,5 +113,16 @@ public class LevelTick {
 
         // 发送增量更新
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, new S2CBattleColliderIncrementalSyne(entity.getId(), holder));
+    }
+
+    private static void vanillaAABB(Collection<IHitCollider> hitboxCollection, Entity hitter, Entity enemy) {
+        AABB box = enemy.getBoundingBox();
+        Vector3f center = box.getCenter().toVector3f();
+        Vector3f half = new Vector3f((float) box.maxX, (float) box.maxY, (float) box.maxZ).sub(center);
+        AABBPlus<Entity, Void> aabbPlus = new AABBPlus<>(half, center);
+
+        for (IHitCollider hit : hitboxCollection) {
+            ColliderUtil.colliding(hit, hitter, null, aabbPlus, enemy, null);
+        }
     }
 }

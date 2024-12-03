@@ -50,12 +50,6 @@ public class EntityColliderHolder implements IEntityColliderHolder {
 
     private UUID id;
 
-    /// 仅用于注册
-    @Deprecated()
-    public EntityColliderHolder() {
-        id = UUID.randomUUID();
-    }
-
     public EntityColliderHolder(Entity entity) {
         converter = new EntityCoordinateConverter(entity);
         id = UUID.randomUUID();
